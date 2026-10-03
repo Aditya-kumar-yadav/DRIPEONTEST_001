@@ -2096,6 +2096,24 @@ app.patch('/api/admin/settings', verifyToken, requireRole('ADMIN'), async (req: 
     const existing = await prisma.siteSettings.findFirst();
     const updateData: any = {};
 
+    const handleMedia = async (newVal: any, oldVal?: string | null) => {
+      if (typeof newVal !== 'string' || !newVal.startsWith('data:')) return newVal;
+      try {
+        if (oldVal && oldVal.includes('cloudinary.com')) {
+          const match = oldVal.match(/\/v\d+\/(.+)\.[a-zA-Z0-9]+$/);
+          if (match && match[1]) {
+            await cloudinary.uploader.destroy(match[1], { invalidate: true });
+            await cloudinary.uploader.destroy(match[1], { resource_type: 'video', invalidate: true });
+          }
+        }
+        const result = await cloudinary.uploader.upload(newVal, { folder: 'dripeon_settings', resource_type: 'auto' });
+        return result.secure_url;
+      } catch (e) {
+        console.error("Cloudinary error during settings update:", e);
+        return newVal;
+      }
+    };
+
     if (announcementText !== undefined) updateData.announcementText = announcementText;
     if (showAnnouncement !== undefined) updateData.showAnnouncement = showAnnouncement;
     if (heroTitle !== undefined) updateData.heroTitle = heroTitle;
@@ -2103,19 +2121,20 @@ app.patch('/api/admin/settings', verifyToken, requireRole('ADMIN'), async (req: 
     if (freeShippingThreshold !== undefined) updateData.freeShippingThreshold = Number(freeShippingThreshold);
     if (shippingRate !== undefined) updateData.shippingRate = Number(shippingRate);
     if (contactEmail !== undefined) updateData.contactEmail = contactEmail;
-    if (homeHeroImage !== undefined) updateData.homeHeroImage = homeHeroImage;
-    if (footwearHeroImage !== undefined) updateData.footwearHeroImage = footwearHeroImage;
-    if (earPiercingImage !== undefined) updateData.earPiercingImage = earPiercingImage;
-    if (aboutImage !== undefined) updateData.aboutImage = aboutImage;
-    if (clothingStoryImage1 !== undefined) updateData.clothingStoryImage1 = clothingStoryImage1;
-    if (clothingStoryImage2 !== undefined) updateData.clothingStoryImage2 = clothingStoryImage2;
-    if (brandAnthemBase64 !== undefined) updateData.brandAnthemBase64 = brandAnthemBase64;
     if (deliverablePincodes !== undefined) updateData.deliverablePincodes = deliverablePincodes;
-    if (promoImageBase64 !== undefined) updateData.promoImageBase64 = promoImageBase64;
-    if (piercingLobeImage !== undefined) updateData.piercingLobeImage = piercingLobeImage;
-    if (piercingHelixImage !== undefined) updateData.piercingHelixImage = piercingHelixImage;
-    if (piercingTragusImage !== undefined) updateData.piercingTragusImage = piercingTragusImage;
-    if (piercingCartilageImage !== undefined) updateData.piercingCartilageImage = piercingCartilageImage;
+
+    if (homeHeroImage !== undefined) updateData.homeHeroImage = await handleMedia(homeHeroImage, existing?.homeHeroImage);
+    if (footwearHeroImage !== undefined) updateData.footwearHeroImage = await handleMedia(footwearHeroImage, existing?.footwearHeroImage);
+    if (earPiercingImage !== undefined) updateData.earPiercingImage = await handleMedia(earPiercingImage, existing?.earPiercingImage);
+    if (aboutImage !== undefined) updateData.aboutImage = await handleMedia(aboutImage, existing?.aboutImage);
+    if (clothingStoryImage1 !== undefined) updateData.clothingStoryImage1 = await handleMedia(clothingStoryImage1, existing?.clothingStoryImage1);
+    if (clothingStoryImage2 !== undefined) updateData.clothingStoryImage2 = await handleMedia(clothingStoryImage2, existing?.clothingStoryImage2);
+    if (brandAnthemBase64 !== undefined) updateData.brandAnthemBase64 = await handleMedia(brandAnthemBase64, existing?.brandAnthemBase64);
+    if (promoImageBase64 !== undefined) updateData.promoImageBase64 = await handleMedia(promoImageBase64, existing?.promoImageBase64);
+    if (piercingLobeImage !== undefined) updateData.piercingLobeImage = await handleMedia(piercingLobeImage, existing?.piercingLobeImage);
+    if (piercingHelixImage !== undefined) updateData.piercingHelixImage = await handleMedia(piercingHelixImage, existing?.piercingHelixImage);
+    if (piercingTragusImage !== undefined) updateData.piercingTragusImage = await handleMedia(piercingTragusImage, existing?.piercingTragusImage);
+    if (piercingCartilageImage !== undefined) updateData.piercingCartilageImage = await handleMedia(piercingCartilageImage, existing?.piercingCartilageImage);
 
     let settings;
     if (existing) {
@@ -2131,6 +2150,7 @@ app.patch('/api/admin/settings', verifyToken, requireRole('ADMIN'), async (req: 
 
     res.json(settings);
   } catch (err) {
+    console.error("[Settings PATCH Error]:", err);
     res.status(500).json({ error: "Failed to update settings" });
   }
 });
