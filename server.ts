@@ -38,7 +38,7 @@ app.use('/uploads', express.static(uploadsDir));
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy');
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_ACCESS_SECRET || 'dripeon_access_secret_token_12984';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'yraj15927@gmail.com';
 
@@ -2040,22 +2040,25 @@ app.patch('/api/admin/settings', verifyToken, requireRole('ADMIN'), async (req: 
 // APPOINTMENTS (EAR PIERCING)
 // ════════════════════════════════════════
 
-// Image Upload Endpoint (Local Fallback)
+// Image Upload Endpoint (Cloudinary)
 app.post('/api/admin/upload', verifyToken, requireRole('ADMIN'), upload.single('image'), async (req: AuthRequest, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No image provided' });
     }
 
-    const ext = req.file.mimetype.split('/')[1] || 'png';
-    const filename = `product-${Date.now()}-${Math.floor(Math.random() * 1000)}.${ext}`;
-    const uploadPath = path.join(process.cwd(), 'uploads', filename);
+    // Convert buffer to base64
+    const b64 = Buffer.from(req.file.buffer).toString('base64');
+    const dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+    
+    const result = await cloudinary.uploader.upload(dataURI, {
+      folder: 'dripeon_products',
+      resource_type: 'auto'
+    });
 
-    fs.writeFileSync(uploadPath, req.file.buffer);
-
-    res.json({ success: true, imageUrl: `/uploads/${filename}` });
+    res.json({ success: true, imageUrl: result.secure_url });
   } catch (error) {
-    console.error("Local upload error:", error);
+    console.error("Cloudinary upload error:", error);
     res.status(500).json({ success: false, message: 'Image upload failed' });
   }
 });
