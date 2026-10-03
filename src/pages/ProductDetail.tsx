@@ -741,12 +741,7 @@ export default function ProductDetail() {
                 )}
               </div>
             </div>
-            {/* PINCODE INTEGRATED */}
-            <div className="p-4 bg-gray-50/50">
-              <PincodeChecker integrated={true} />
-            </div>
           </div>
-
 
           {/* LUXURY PROMO COUPON WIDGET */}
           <div className="bg-white/40 border border-gray-200/20 p-4 rounded-xl space-y-3">
