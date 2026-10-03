@@ -154,7 +154,8 @@ export default function Checkout() {
     createOrder,
     addToast,
     apiFetch,
-    checkedCartItemIds
+    checkedCartItemIds,
+    checkPincode
   } = useApp();
 
   const navigate = useNavigate();
@@ -325,6 +326,12 @@ export default function Checkout() {
   const handleStripeInitialize = async () => {
     if (!name.trim() || !phone.trim() || !street.trim() || !city.trim() || !state.trim() || !pincode.trim() || !locality.trim()) {
       addToast("Please fill out all mandatory shipping details (Name, Phone, Pincode, Locality, Address, City, State)", "error");
+      return;
+    }
+
+    const pinCheck = await checkPincode(pincode);
+    if (!pinCheck.available) {
+      addToast("Sorry, we currently do not deliver to this Pincode.", "error");
       return;
     }
 
@@ -502,6 +509,12 @@ export default function Checkout() {
     e.preventDefault();
     if (!name.trim() || !phone.trim() || !street.trim() || !city.trim() || !state.trim() || !pincode.trim() || !locality.trim()) {
       addToast("Please fill out all mandatory shipping details (Name, Phone, Pincode, Locality, Address, City, State) to proceed", "error");
+      return;
+    }
+
+    const pinCheck = await checkPincode(pincode);
+    if (!pinCheck.available) {
+      addToast("Sorry, we currently do not deliver to this Pincode.", "error");
       return;
     }
 
