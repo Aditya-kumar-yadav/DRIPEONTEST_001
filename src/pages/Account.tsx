@@ -1213,7 +1213,7 @@ export default function Account(): React.JSX.Element {
                               onClick={() => navigate(`/orders/${order.id}`)}
                               className="px-4 py-2 bg-red-600 text-white hover:bg-gray-900 text-white text-[10px] font-medium tracking-widest uppercase transition-all rounded-sm font-bold text-center w-full sm:w-auto cursor-pointer"
                             >
-                              {order.status === 'DELIVERED' ? 'Post Review / Track' : 'Track Package'}
+                              {order.status === 'DELIVERED' ? 'Post Review / Track' : order.status === 'CANCELLED' ? 'View Details' : 'Track Package'}
                             </button>
                           </div>
                         </div>
