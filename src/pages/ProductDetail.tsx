@@ -4,7 +4,6 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../AppContext';
 import { Product, ProductVariant, ColorType, SizeType, ProductImage } from '../types';
 import { Shield, Sparkles, Check, ChevronDown, RefreshCw, Scissors, Heart, Share2, Shirt, Info, Ruler, X, Star, ChevronLeft, ChevronRight, Link as LinkIcon, MessageCircle, Facebook, Mail, MessageSquare, Linkedin, MoreHorizontal } from 'lucide-react';
-import { ProductReviews } from '../components/ProductReviews';
 import { RelatedProducts } from '../components/RelatedProducts';
 import { SafeImage } from '../components/SafeImage';
 import { ParticleCard, GlobalSpotlight } from '../components/MagicBentoCard';
@@ -952,9 +951,6 @@ export default function ProductDetail() {
           </div>
         </div>
       </div>
-
-      {/* Persistent Customer Review & Rating Segment */}
-      <ProductReviews productId={product.id} productName={product.name} />
 
       {/* Recommended matching silhouettes */}
       <RelatedProducts currentProductId={product.id} currentCategory={product.category} />
