@@ -1630,6 +1630,16 @@ app.post('/api/returns', verifyToken, async (req: AuthRequest, res) => {
       return retReq;
     });
 
+    const userEmail = req.user?.email || 'customer@dripeon.com';
+    sendEmail(userEmail, 'DRIPEON: Return Request Received', `
+      <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee;">
+        <h2 style="color: #c9a96e; text-transform: uppercase;">Return Request Received</h2>
+        <p>Your ${type.toLowerCase()} request for Order #${orderId} has been successfully submitted and is currently <strong>PENDING</strong> review.</p>
+        <p><strong>Reason provided:</strong> ${reason}</p>
+        <p>Our team will inspect the request and you will receive an update shortly.</p>
+      </div>
+    `);
+
     notifyAdmins(`New Return Request`, `<p>Order #${orderId} has requested a return for reason: ${reason}</p>`);
 
     res.status(201).json(newRequest);
@@ -1700,9 +1710,17 @@ app.patch('/api/admin/returns/:id/status', verifyToken, requireRole('ADMIN'), as
     });
 
     const usrEmail = retReq.user?.email || 'customer@dripeon.com';
-    sendEmail(usrEmail, `DRIPEON Return/Exchange Request: ${status}`, `
-      <p>Dear customer, your request for ${retReq.type} has been updated to: <strong>${status}</strong>.</p>
-      <p>Admin Notes: ${adminNotes || retReq.adminNotes || 'None'}</p>
+    sendEmail(usrEmail, `DRIPEON: Return/Exchange Request ${status}`, `
+      <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 25px; border: 1px solid #ddd; border-radius: 8px;">
+        <h2 style="color: #c9a96e; text-transform: uppercase; margin-top: 0;">Claim Status Update</h2>
+        <p>Dear customer, your request for <strong>${retReq.type}</strong> has been reviewed and marked as: <strong style="color: ${status === 'APPROVED' || status === 'COMPLETED' ? '#22c55e' : status === 'REJECTED' ? '#ef4444' : '#c9a96e'};">${status}</strong>.</p>
+        ${adminNotes || retReq.adminNotes ? `
+        <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #c9a96e; margin-top: 20px;">
+          <h4 style="margin: 0 0 10px 0; color: #333; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Message from DRIPEON Team:</h4>
+          <p style="margin: 0; color: #555; font-style: italic;">"${adminNotes || retReq.adminNotes}"</p>
+        </div>` : ''}
+        ${status === 'COMPLETED' ? `<p style="margin-top: 20px;"><strong>Refund Processed:</strong> The refund for this claim has been initiated and will reflect in your original payment method shortly.</p>` : ''}
+      </div>
     `);
 
     res.json(updatedRequest);
