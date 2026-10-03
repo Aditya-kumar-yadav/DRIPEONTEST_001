@@ -1210,7 +1210,7 @@ export default function Account(): React.JSX.Element {
                           <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
                             <span className="text-gray-500 text-[10px] hidden md:inline">Gateway Status: Razorpay Encrypted</span>
                             <button 
-                              onClick={() => navigate(`/orders/${order.id}`)}
+                              onClick={() => navigate(`/orders/${order.id}`, { state: { orderData: order } })}
                               className="px-4 py-2 bg-red-600 text-white hover:bg-gray-900 text-white text-[10px] font-medium tracking-widest uppercase transition-all rounded-sm font-bold text-center w-full sm:w-auto cursor-pointer"
                             >
                               {order.status === 'DELIVERED' ? 'Post Review / Track' : order.status === 'CANCELLED' ? 'View Details' : 'Track Package'}

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useApp } from '../AppContext';
 import { Order, OrderStatus } from '../types';
 import { 
   Package, Truck, CheckCircle, Clock, MapPin, 
   ArrowLeft, Copy, Check, Star, Upload, Trash2, 
   ChevronRight, Calendar, Tag, FileText, Info, Compass,
-  PhoneCall, Headphones, AlertTriangle
+  PhoneCall, Headphones, AlertTriangle, X, CheckSquare
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -42,9 +42,11 @@ export default function OrderTracking() {
   const { orderId } = useParams<{ orderId: string }>();
   const { fetchOrderById, submitReview, cancelOrder, confirmDelivery, requestCallbackSupport, addToast, user } = useApp();
   const navigate = useNavigate();
+  const location = useLocation();
+  const initialOrderData = location.state?.orderData || null;
 
-  const [order, setOrder] = useState<Order | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [order, setOrder] = useState<Order | null>(initialOrderData);
+  const [loading, setLoading] = useState<boolean>(!initialOrderData);
   const [copied, setCopied] = useState<boolean>(false);
 
   // Cancellation States
@@ -560,97 +562,82 @@ export default function OrderTracking() {
         )}
 
         {/* 2. DYNAMIC TIMELINE STEPS CARD */}
-        <div className="bg-white border border-red-600/15 rounded-3xl p-6 sm:p-8 shadow-[0_15px_40px_rgba(0,0,0,0.85)] relative overflow-hidden">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 relative overflow-hidden max-w-lg mx-auto">
           
-          <div className="absolute top-4 left-4 text-[8px] font-medium text-red-600/20 tracking-widest pointer-events-none uppercase">
-            [ SATELLITE.TRACK.LATENCY.OFF ]
-          </div>
-
-          <div className="mb-8 flex items-center justify-between border-b border-red-600/10 pb-4">
-            <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-600 text-white animate-ping"></span>
-              <span className="text-xs font-medium text-red-600 tracking-widest uppercase">MILITARY-LEVEL DISPATCH ACCURACY</span>
-            </div>
-            <span className="text-[10px] font-medium text-gray-500">REFRESHED: LIVE</span>
+          {/* Header Row: Timeline --- In Progress */}
+          <div className="flex items-center justify-between mb-8">
+            <span className="px-4 py-1.5 rounded-full border border-gray-200 text-xs font-semibold text-gray-700">Timeline</span>
+            
+            <div className="flex-1 border-t border-dashed border-gray-200 mx-4"></div>
+            
+            <span className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 ${
+              order.status === 'DELIVERED' ? 'bg-emerald-50 text-emerald-600' :
+              order.status === 'CANCELLED' ? 'bg-red-50 text-red-600' :
+              'bg-[#E6F4FC] text-[#2292CC]'
+            }`}>
+              {order.status === 'DELIVERED' ? (
+                <><CheckSquare size={12} /> Delivered</>
+              ) : order.status === 'CANCELLED' ? (
+                <><X size={12} /> Cancelled</>
+              ) : (
+                <><CheckSquare size={12} /> In Progress</>
+              )}
+            </span>
           </div>
 
           {/* Timeline Node Generator */}
-          <div className="space-y-8 relative pl-6 sm:pl-10">
+          <div className="space-y-0 relative pl-4 sm:pl-6">
             
-            {/* Timeline Vertical Background Connection Line bar */}
-            <div className="absolute left-[33px] sm:left-[49px] top-6 bottom-6 w-[2px] bg-gray-200" />
-            
-            {/* Timeline Active Overlay Bar depending on status */}
-            {order.status !== 'CANCELLED' && order.status !== 'PENDING' && (
-              <div 
-                className="absolute left-[33px] sm:left-[49px] top-6 w-[2px] bg-red-600 transition-all duration-1000" 
-                style={{ 
-                  height: order.status === 'DELIVERED' 
-                    ? 'calc(100% - 48px)' 
-                    : order.status === 'TRANSIT'
-                    ? '66%'
-                    : order.status === 'SHIPPED' 
-                    ? '33%' 
-                    : '0%' 
-                }}
-              />
-            )}
-
             {TIMELINE_STEPS.map((step, idx) => {
-              // Calculate status progression
               const stepIndexInDb = statusOrder.indexOf(step.status);
               const isPassedOrCurrent = currentIndex >= stepIndexInDb && order.status !== 'CANCELLED';
               const isCurrent = order.status === step.status;
               
               const StepIcon = step.icon;
 
-              // Retrive corresponding logged timestamp from database statusTimeline if available
               const foundTimelineLog = order.statusTimeline?.find(log => log.status === step.status);
               const customDescription = foundTimelineLog?.description || step.text;
-              const formattedTime = foundTimelineLog 
-                ? new Date(foundTimelineLog.timestamp).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) 
-                : (idx === 0 ? new Date(order.createdAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '');
-              const formattedDate = foundTimelineLog 
-                ? new Date(foundTimelineLog.timestamp).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) 
-                : (idx === 0 ? new Date(order.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : '');
+              
+              let formattedTime = "";
+              let formattedDate = "";
+              if (foundTimelineLog) {
+                const dt = new Date(foundTimelineLog.timestamp);
+                formattedDate = dt.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+                formattedTime = dt.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
+              } else if (idx === 0) {
+                const dt = new Date(order.createdAt);
+                formattedDate = dt.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+                formattedTime = dt.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
+              }
 
               return (
-                <div key={idx} className="flex relative items-start gap-4 sm:gap-6 group">
+                <div key={idx} className="flex relative items-start gap-4 sm:gap-6 group pb-8 last:pb-0">
+                  
+                  {/* Vertical Connection Line */}
+                  {idx !== TIMELINE_STEPS.length - 1 && (
+                    <div className="absolute left-[19px] sm:left-[27px] top-[40px] bottom-[-8px] w-[1px] bg-gray-200" />
+                  )}
                   
                   {/* Circle Indicator Container */}
-                  <div className="relative z-10 flex items-center justify-center">
-                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all duration-500 ${
-                      isCurrent 
-                        ? 'bg-red-600 text-white ring-4 ring-red-600/20 scale-110 shadow-lg shadow-red-600/20 animate-pulse' 
-                        : isPassedOrCurrent 
-                        ? 'bg-black border-2 border-black text-white' 
-                        : 'bg-white border-2 border-gray-200 text-gray-300'
-                    }`}>
-                      <StepIcon className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+                  <div className="relative z-10 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white border border-gray-200 text-gray-400">
+                      <StepIcon className="w-4.5 h-4.5" />
                     </div>
                   </div>
 
                   {/* Text Description Box */}
-                  <div className="flex-1 bg-white border border-gray-100 rounded-2xl p-4 sm:p-5 hover:border-red-600/30 transition-all shadow-sm">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 mb-2">
-                      <h4 className={`text-sm tracking-wider uppercase font-bold ${
-                        isCurrent 
-                          ? 'text-red-600' 
-                          : isPassedOrCurrent 
-                          ? 'text-black' 
-                          : 'text-gray-400'
-                      }`}>
+                  <div className="flex-1 pt-0.5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2">
+                      <h4 className={`text-base font-medium ${isPassedOrCurrent ? 'text-gray-900' : 'text-gray-400'}`}>
                         {step.label}
                       </h4>
                       {isPassedOrCurrent && (formattedDate || formattedTime) && (
-                        <span className="text-[10px] font-medium text-red-600 tracking-widest uppercase">
-                          {formattedDate} • {formattedTime}
+                        <span className="text-xs font-medium text-gray-400 shrink-0">
+                          {formattedDate}, {formattedTime}
                         </span>
                       )}
                     </div>
-                    <p className={`text-xs leading-relaxed font-medium ${
-                      isPassedOrCurrent ? 'text-gray-600' : 'text-gray-400'
-                    }`}>
+                    <p className={`text-sm mt-1 font-medium ${isPassedOrCurrent ? 'text-gray-400' : 'text-gray-300'}`}>
                       {customDescription}
                     </p>
                   </div>
@@ -658,16 +645,27 @@ export default function OrderTracking() {
                 </div>
               );
             })}
-
           </div>
+
+          {/* Rate Delivery Button */}
+          {order.status === 'DELIVERED' && (
+             <div className="mt-8">
+               <button onClick={() => {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  addToast("Please fill the review form at the top", "info");
+               }} className="w-full bg-[#F0F8F1] hover:bg-[#E5F3E7] text-[#2E7A4A] border border-[#D1EBD6] transition-colors py-3.5 rounded-full font-medium text-sm flex items-center justify-center gap-2 cursor-pointer">
+                 <span className="text-lg">👋</span> Rate this delivery
+               </button>
+             </div>
+          )}
 
           {/* Cancellations Warnings Alert Block */}
           {(order.status === 'CANCELLED' || order.status === 'REFUNDED') && (
-            <div className="mt-8 bg-red-950/20 border border-red-500/20 rounded-2xl p-4 flex gap-3 text-left">
-              <Info className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+            <div className="mt-8 bg-red-50 border border-red-100 rounded-2xl p-4 flex gap-3 text-left">
+              <Info className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
               <div>
-                <h4 className="text-xs uppercase font-medium font-bold text-red-400 tracking-wider">Cargo Canceled</h4>
-                <p className="text-xs text-gray-500/80 mt-1 font-light">This shipping process is retracted or money returned under our studio guidelines.</p>
+                <h4 className="text-sm font-semibold text-red-700">Order Cancelled</h4>
+                <p className="text-sm text-red-600/80 mt-1">This shipment process is retracted or money returned under our guidelines.</p>
               </div>
             </div>
           )}
