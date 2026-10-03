@@ -5,36 +5,42 @@ import { Order, OrderStatus } from '../types';
 import { 
   Package, Truck, CheckCircle, Clock, MapPin, 
   ArrowLeft, Copy, Check, Star, Upload, Trash2, 
-  ChevronRight, Calendar, Tag, FileText, Info, Compass,
-  PhoneCall, Headphones, AlertTriangle, X, CheckSquare
+  PhoneCall, Headphones, AlertTriangle, X, CheckSquare,
+  RefreshCw, CheckCircle2, XCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-// Status labels and steps map (Exactly 4 connected statuses matching the UI sample)
+// Status labels and steps map (Exactly matching the Admin panel)
 const TIMELINE_STEPS: { status: OrderStatus; label: string; text: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { 
+    status: 'PENDING', 
+    label: 'Pending', 
+    text: 'Order placed, awaiting system verification.',
+    icon: Clock
+  },
+  { 
     status: 'CONFIRMED', 
-    label: 'Order Confirmed', 
-    text: 'Your order was successfully registered and verified at DRIPEON.',
-    icon: CheckCircle
+    label: 'Confirmed', 
+    text: 'Order was successfully verified by our admins.',
+    icon: RefreshCw
   },
   { 
     status: 'SHIPPED', 
-    label: 'Shipping', 
-    text: 'Your order was processed and handed over to DHL logistics partners.',
+    label: 'Shipped', 
+    text: 'Package processed and handed over to logistics.',
     icon: Truck
   },
   { 
     status: 'TRANSIT', 
     label: 'Transit', 
-    text: 'Parcels are in transit between regional distribution hubs.',
+    text: 'Package is in transit between distribution hubs.',
     icon: Compass
   },
   { 
     status: 'DELIVERED', 
-    label: 'Sent to Customer', 
-    text: 'Shipment arrived at your address. Signature and secure logistics verified.',
-    icon: MapPin
+    label: 'Delivered', 
+    text: 'Shipment safely arrived at your destination.',
+    icon: CheckCircle2
   }
 ];
 
@@ -561,26 +567,26 @@ export default function OrderTracking() {
           </motion.div>
         )}
 
-        {/* 2. DYNAMIC TIMELINE STEPS CARD */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 relative overflow-hidden max-w-lg mx-auto">
+        {/* 2. DYNAMIC TIMELINE STEPS */}
+        <div className="bg-transparent p-4 sm:p-6 max-w-lg mx-auto">
           
           {/* Header Row: Timeline --- In Progress */}
-          <div className="flex items-center justify-between mb-8">
-            <span className="px-4 py-1.5 rounded-full border border-gray-200 text-xs font-semibold text-gray-700">Timeline</span>
+          <div className="flex items-center justify-between mb-10">
+            <span className="text-sm font-bold text-black tracking-widest uppercase">Timeline</span>
             
-            <div className="flex-1 border-t border-dashed border-gray-200 mx-4"></div>
+            <div className="flex-1 border-t border-black/10 mx-6"></div>
             
-            <span className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 ${
-              order.status === 'DELIVERED' ? 'bg-emerald-50 text-emerald-600' :
-              order.status === 'CANCELLED' ? 'bg-red-50 text-red-600' :
-              'bg-[#E6F4FC] text-[#2292CC]'
+            <span className={`px-4 py-1.5 border text-xs font-bold uppercase tracking-widest flex items-center gap-1.5 ${
+              order.status === 'DELIVERED' ? 'border-black text-black bg-white' :
+              order.status === 'CANCELLED' ? 'border-black text-black bg-white' :
+              'border-black text-black bg-white'
             }`}>
               {order.status === 'DELIVERED' ? (
                 <><CheckSquare size={12} /> Delivered</>
               ) : order.status === 'CANCELLED' ? (
                 <><X size={12} /> Cancelled</>
               ) : (
-                <><CheckSquare size={12} /> In Progress</>
+                <><Clock size={12} /> In Progress</>
               )}
             </span>
           </div>
@@ -615,29 +621,31 @@ export default function OrderTracking() {
                   
                   {/* Vertical Connection Line */}
                   {idx !== TIMELINE_STEPS.length - 1 && (
-                    <div className="absolute left-[19px] sm:left-[27px] top-[40px] bottom-[-8px] w-[1px] bg-gray-200" />
+                    <div className="absolute left-[19px] sm:left-[27px] top-[40px] bottom-[-8px] w-[1px] bg-black/10" />
                   )}
                   
                   {/* Circle Indicator Container */}
                   <div className="relative z-10 flex items-center justify-center shrink-0">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white border border-gray-200 text-gray-400">
-                      <StepIcon className="w-4.5 h-4.5" />
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all ${
+                      isPassedOrCurrent ? 'bg-black border-black text-white' : 'bg-white border-black/20 text-black/20'
+                    }`}>
+                      <StepIcon className="w-4 h-4" />
                     </div>
                   </div>
 
                   {/* Text Description Box */}
                   <div className="flex-1 pt-0.5">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2">
-                      <h4 className={`text-base font-medium ${isPassedOrCurrent ? 'text-gray-900' : 'text-gray-400'}`}>
+                      <h4 className={`text-base font-bold uppercase tracking-wider ${isPassedOrCurrent ? 'text-black' : 'text-black/30'}`}>
                         {step.label}
                       </h4>
                       {isPassedOrCurrent && (formattedDate || formattedTime) && (
-                        <span className="text-xs font-medium text-gray-400 shrink-0">
+                        <span className="text-xs font-medium text-black/40 shrink-0">
                           {formattedDate}, {formattedTime}
                         </span>
                       )}
                     </div>
-                    <p className={`text-sm mt-1 font-medium ${isPassedOrCurrent ? 'text-gray-400' : 'text-gray-300'}`}>
+                    <p className={`text-sm mt-1 font-medium ${isPassedOrCurrent ? 'text-black/60' : 'text-black/20'}`}>
                       {customDescription}
                     </p>
                   </div>
@@ -653,19 +661,19 @@ export default function OrderTracking() {
                <button onClick={() => {
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                   addToast("Please fill the review form at the top", "info");
-               }} className="w-full bg-[#F0F8F1] hover:bg-[#E5F3E7] text-[#2E7A4A] border border-[#D1EBD6] transition-colors py-3.5 rounded-full font-medium text-sm flex items-center justify-center gap-2 cursor-pointer">
-                 <span className="text-lg">👋</span> Rate this delivery
+               }} className="w-full bg-black hover:bg-black/90 text-white transition-colors py-4 rounded-none font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 cursor-pointer">
+                 RATE THIS DELIVERY
                </button>
              </div>
           )}
 
           {/* Cancellations Warnings Alert Block */}
           {(order.status === 'CANCELLED' || order.status === 'REFUNDED') && (
-            <div className="mt-8 bg-red-50 border border-red-100 rounded-2xl p-4 flex gap-3 text-left">
-              <Info className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+            <div className="mt-8 border border-black p-4 flex gap-3 text-left bg-white">
+              <XCircle className="w-5 h-5 text-black shrink-0 mt-0.5" />
               <div>
-                <h4 className="text-sm font-semibold text-red-700">Order Cancelled</h4>
-                <p className="text-sm text-red-600/80 mt-1">This shipment process is retracted or money returned under our guidelines.</p>
+                <h4 className="text-sm font-bold text-black uppercase tracking-widest">Order Cancelled</h4>
+                <p className="text-sm text-black/60 mt-1 font-medium">This shipment process is retracted or money returned under our guidelines.</p>
               </div>
             </div>
           )}
@@ -1092,7 +1100,7 @@ export default function OrderTracking() {
 
         {/* MODAL OVERLAY FOR VIP ASSISTANCE */}
         {showSupportModal && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 select-none animate-[fadeIn_0.2s_ease-out]">
+          <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 select-none animate-[fadeIn_0.2s_ease-out]">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
