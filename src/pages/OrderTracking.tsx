@@ -515,13 +515,13 @@ export default function OrderTracking() {
               <p className="text-xs text-gray-500/80 line-clamp-1 mt-1 font-light tracking-wide">{order.shippingAddress.address}, {order.shippingAddress.city}</p>
             </div>
             <div className="pt-4 border-t border-red-600/5 text-[10px] font-medium text-gray-500 flex justify-between items-center">
-              <span>VALUED: ${order.totalAmount.toLocaleString()}</span>
+              <span>VALUED: ₹{order.totalAmount.toLocaleString()}</span>
               {order.paymentStatus === 'REFUNDED' ? (
                 <span className="text-red-450 font-semibold uppercase">[ REFUNDED ]</span>
               ) : order.paymentStatus === 'PENDING' ? (
                 <span className="text-amber-500 font-semibold uppercase animate-pulse">COD [ DUE ]</span>
               ) : (
-                <span className="text-emerald-400 font-semibold">PAID ({order.paymentMethod?.toUpperCase() || 'CARD'})</span>
+                <span className="text-emerald-400 font-semibold">PAID ({order.paymentMethod?.toUpperCase() || 'SECURE'})</span>
               )}
             </div>
           </div>
@@ -578,12 +578,12 @@ export default function OrderTracking() {
           <div className="space-y-8 relative pl-6 sm:pl-10">
             
             {/* Timeline Vertical Background Connection Line bar */}
-            <div className="absolute left-[33px] sm:left-[49px] top-6 bottom-6 w-[1.5px] bg-[#1a1a1a]" />
+            <div className="absolute left-[33px] sm:left-[49px] top-6 bottom-6 w-[2px] bg-gray-200" />
             
             {/* Timeline Active Overlay Bar depending on status */}
             {order.status !== 'CANCELLED' && order.status !== 'PENDING' && (
               <div 
-                className="absolute left-[33px] sm:left-[49px] top-6 w-[2px] bg-gradient-to-b from-[#C9A96E] to-emerald-500/90 transition-all duration-700" 
+                className="absolute left-[33px] sm:left-[49px] top-6 w-[2px] bg-red-600 transition-all duration-1000" 
                 style={{ 
                   height: order.status === 'DELIVERED' 
                     ? 'calc(100% - 48px)' 
@@ -619,26 +619,26 @@ export default function OrderTracking() {
                   
                   {/* Circle Indicator Container */}
                   <div className="relative z-10 flex items-center justify-center">
-                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all duration-500 ${
                       isCurrent 
-                        ? 'bg-red-600 text-white ring-4 ring-[#C9A96E]/20 scale-110 shadow-lg shadow-[#C9A96E]/15' 
+                        ? 'bg-red-600 text-white ring-4 ring-red-600/20 scale-110 shadow-lg shadow-red-600/20 animate-pulse' 
                         : isPassedOrCurrent 
-                        ? 'bg-emerald-950 border-2 border-emerald-500 text-emerald-400' 
-                        : 'bg-[#0d0d0d] border border-neutral-800 text-neutral-600'
+                        ? 'bg-black border-2 border-black text-white' 
+                        : 'bg-white border-2 border-gray-200 text-gray-300'
                     }`}>
                       <StepIcon className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                     </div>
                   </div>
 
                   {/* Text Description Box */}
-                  <div className="flex-1 bg-[#121212]/30 border border-red-600/5 rounded-2xl p-4 sm:p-5 hover:border-red-600/15 transition-all">
+                  <div className="flex-1 bg-white border border-gray-100 rounded-2xl p-4 sm:p-5 hover:border-red-600/30 transition-all shadow-sm">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 mb-2">
-                      <h4 className={`text-sm tracking-wider uppercase font-semibold ${
+                      <h4 className={`text-sm tracking-wider uppercase font-bold ${
                         isCurrent 
                           ? 'text-red-600' 
                           : isPassedOrCurrent 
-                          ? 'text-gray-900' 
-                          : 'text-neutral-500'
+                          ? 'text-black' 
+                          : 'text-gray-400'
                       }`}>
                         {step.label}
                       </h4>
@@ -648,8 +648,8 @@ export default function OrderTracking() {
                         </span>
                       )}
                     </div>
-                    <p className={`text-xs leading-relaxed font-light ${
-                      isPassedOrCurrent ? 'text-[#D5D0CB]' : 'text-neutral-600'
+                    <p className={`text-xs leading-relaxed font-medium ${
+                      isPassedOrCurrent ? 'text-gray-600' : 'text-gray-400'
                     }`}>
                       {customDescription}
                     </p>
