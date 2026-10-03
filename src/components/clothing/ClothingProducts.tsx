@@ -34,6 +34,7 @@ export default function ClothingProducts() {
             title="LATEST ARCHIVES" 
             subtitle="Strictly curated drops."
             isFootwear={false}
+            filterCategoryType="CLOTHING"
           />
         </div>
       ) : (

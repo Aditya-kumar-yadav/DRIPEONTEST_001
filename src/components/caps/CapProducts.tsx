@@ -27,6 +27,7 @@ export default function CapProducts() {
           title="THE LATEST DROP" 
           subtitle="Limited stock available."
           isFootwear={false}
+          filterCategoryType="CAPS"
         />
       ) : (
         <div className="text-center py-24 bg-gray-50 rounded-lg max-w-7xl mx-auto px-6 lg:px-12 my-24">
