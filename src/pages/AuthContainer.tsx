@@ -51,7 +51,15 @@ export default function AuthContainer({ initialMode }: AuthContainerProps) {
     if (user) {
       const role = user.publicMetadata?.role as string;
       const email = user.primaryEmailAddress?.emailAddress || '';
-      const isAdmin = role === 'ADMIN' || email === 'storedripeon@gmail.com' || email === 'aurora.web011@gmail.com';
+      const adminEmails = [
+        'storedripeon@gmail.com',
+        'aurora.web011@gmail.com',
+        'admin@dripeon.com',
+        'dripeon@gmail.com',
+        'yraj15927@gmail.com',
+        'btech60045.24@bitmesra.ac.in'
+      ];
+      const isAdmin = role === 'ADMIN' || adminEmails.includes(email.toLowerCase());
       
       const defaultRedirect = isAdmin ? '/admin/dashboard' : '/account';
       const protectedRoutes = ['/checkout', '/account', '/orders'];

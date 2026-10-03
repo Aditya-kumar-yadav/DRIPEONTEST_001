@@ -110,10 +110,10 @@ const verifyToken = [
       'yraj15927@gmail.com',
       'btech60045.24@bitmesra.ac.in'
     ];
-    let role: 'ADMIN' | 'CUSTOMER' = 'ADMIN'; // Temporarily force all authenticated users to ADMIN for development
-    // if (clerkRole === 'ADMIN' || adminEmails.includes(frontendEmail.toLowerCase())) {
-    //   role = 'ADMIN';
-    // }
+    let role: 'ADMIN' | 'CUSTOMER' = 'CUSTOMER';
+    if (clerkRole === 'ADMIN' || adminEmails.includes(frontendEmail.toLowerCase())) {
+      role = 'ADMIN';
+    }
 
     req.user = {
       id: userId,
