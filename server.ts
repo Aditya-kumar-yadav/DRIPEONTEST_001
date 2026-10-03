@@ -301,15 +301,26 @@ const CACHE_TTL = 1000 * 2; // 2 seconds for live updates
 export const invalidateProductCache = () => {
   productCache = null;
 };
+// --- Pincode Caching to Save DB Reads ---
+let pincodeCache: Set<string> | null = null;
+async function getPincodeCache() {
+  if (pincodeCache === null) {
+    const pins = await prisma.serviceablePincode.findMany({ select: { pincode: true } });
+    pincodeCache = new Set(pins.map(p => p.pincode));
+  }
+  return pincodeCache;
+}
+function invalidatePincodeCache() {
+  pincodeCache = null;
+}
+
 // --- Pincode Endpoints ---
 app.get('/api/pincodes/check/:pincode', async (req, res) => {
   try {
     const { pincode } = req.params;
-    const pin = await prisma.serviceablePincode.findUnique({
-      where: { pincode }
-    });
-    if (pin) {
-      res.json({ available: true, data: pin });
+    const cache = await getPincodeCache();
+    if (cache.has(pincode)) {
+      res.json({ available: true });
     } else {
       res.json({ available: false });
     }
@@ -348,6 +359,7 @@ app.post('/api/admin/pincodes', verifyToken, requireRole('ADMIN'), async (req, r
         // ignore unique constraints if parallel
       }
     }
+    invalidatePincodeCache();
     res.json({ success: true, added: addedCount });
   } catch (error) {
     res.status(500).json({ error: 'Failed to add pincodes' });
@@ -359,6 +371,7 @@ app.delete('/api/admin/pincodes/:id', verifyToken, requireRole('ADMIN'), async (
     await prisma.serviceablePincode.delete({
       where: { id: req.params.id }
     });
+    invalidatePincodeCache();
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete pincode' });
