@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../AppContext';
 import { Product, ProductVariant, ColorType, SizeType, ProductImage } from '../types';
-import { Shield, Sparkles, Check, ChevronDown, RefreshCw, Scissors, Heart, Share2, Shirt, Info, Ruler, X, Star, ChevronLeft, ChevronRight, Link as LinkIcon, MessageCircle, Facebook, Mail, MessageSquare, Linkedin, MoreHorizontal } from 'lucide-react';
+import { Shield, Sparkles, Check, ChevronDown, RefreshCw, Scissors, Heart, Share2, Shirt, Info, Ruler, X, Star, ChevronLeft, ChevronRight, Link as LinkIcon, MessageCircle, Facebook, Mail, MessageSquare, Linkedin, MoreHorizontal, MapPin, Truck } from 'lucide-react';
 import { RelatedProducts } from '../components/RelatedProducts';
 import { SafeImage } from '../components/SafeImage';
 import { ParticleCard, GlobalSpotlight } from '../components/MagicBentoCard';
@@ -13,7 +13,7 @@ import PincodeChecker from '../components/PincodeChecker';
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
-  const { addToCart, addToast, wishlist, addToWishlist, removeFromWishlist } = useApp();
+  const { addToCart, addToast, wishlist, addToWishlist, removeFromWishlist, checkPincode } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -63,6 +63,28 @@ export default function ProductDetail() {
   // Interaction states
   const [addingState, setAddingState] = useState<'idle' | 'collapsing' | 'success'>('idle');
   const [bounceSize, setBounceSize] = useState<SizeType | null>(null);
+
+  // Pincode Checker State
+  const [pincode, setPincode] = useState(localStorage.getItem('saved_pincode') || '');
+  const [checkingPincode, setCheckingPincode] = useState(false);
+  const [pincodeStatus, setPincodeStatus] = useState<'idle' | 'available' | 'unavailable'>('idle');
+
+  const handleCheckPincode = async () => {
+    if (pincode.length !== 6 || isNaN(Number(pincode))) {
+      addToast('Please enter a valid 6-digit PIN code', 'error');
+      return;
+    }
+    setCheckingPincode(true);
+    const result = await checkPincode(pincode);
+    setCheckingPincode(false);
+    
+    if (result.available) {
+      setPincodeStatus('available');
+      localStorage.setItem('saved_pincode', pincode);
+    } else {
+      setPincodeStatus('unavailable');
+    }
+  };
   const [quantity, setQuantity] = useState(1);
   const isWishlisted = product ? wishlist.some((w: any) => w.productId === product.id) : false;
   const [showCareDocs, setShowCareDocs] = useState(false);
@@ -823,11 +845,62 @@ export default function ProductDetail() {
             </div>
           )}
 
+          {/* PINCODE AVAILABILITY CHECKER */}
+          <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm relative overflow-hidden mb-4">
+            {pincodeStatus === 'unavailable' && (
+              <div className="flex items-center gap-2 text-red-600 font-bold uppercase tracking-wider text-xs mb-4 animate-pulse">
+                <Info className="w-4 h-4" /> X OUT OF STOCK FOR THIS AREA
+              </div>
+            )}
+            
+            <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-black mb-3">
+              <MapPin className="w-4 h-4" /> DELIVERY AVAILABILITY CHECKER
+            </div>
+            
+            <div className="flex gap-3">
+              <div className={`flex-1 flex items-center gap-2 border rounded-xl px-3 bg-white transition-colors ${
+                pincodeStatus === 'available' ? 'border-green-500' :
+                pincodeStatus === 'unavailable' ? 'border-red-600' : 'border-gray-200'
+              }`}>
+                <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
+                <input 
+                  type="text"
+                  maxLength={6}
+                  placeholder="Enter 6-digit PIN code"
+                  value={pincode}
+                  onChange={(e) => {
+                    setPincode(e.target.value);
+                    if (pincodeStatus !== 'idle') setPincodeStatus('idle');
+                  }}
+                  className="w-full bg-transparent py-3 text-sm outline-none font-medium placeholder:text-gray-400 text-black"
+                />
+              </div>
+              <button 
+                onClick={handleCheckPincode}
+                disabled={checkingPincode || pincode.length !== 6}
+                className="bg-gray-500 hover:bg-gray-600 disabled:bg-gray-300 text-white font-bold tracking-widest uppercase text-xs px-6 py-3 rounded-xl transition-colors shrink-0 cursor-pointer"
+              >
+                {checkingPincode ? '...' : 'CHECK'}
+              </button>
+            </div>
+            
+            {pincodeStatus === 'available' && (
+              <div className="mt-3 text-xs font-medium text-green-600 flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5" /> Delivery available to {pincode}
+              </div>
+            )}
+
+            <div className="mt-4 flex items-center justify-between text-[11px] text-gray-500 font-medium pt-3 border-t border-gray-100">
+              <span className="flex items-center gap-1.5"><Truck className="w-3.5 h-3.5" /> Free shipping over ₹5,000</span>
+              <span>Pay on delivery available</span>
+            </div>
+          </div>
+
           {/* CTA GRID BUTTONS */}
           <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-3 sm:gap-4 pt-2">
             {addingState === 'idle' ? (
               <button
-                disabled={!selectedVariant || selectedVariant.stockQuantity <= 0}
+                disabled={!selectedVariant || selectedVariant.stockQuantity <= 0 || pincodeStatus === 'unavailable'}
                 onClick={handleAddToBag}
                 className="bg-red-600 hover:bg-gray-900 text-white py-4 px-6 text-xs font-medium font-bold tracking-[0.2em] uppercase transition-all duration-300 disabled:bg-gray-100 disabled:pointer-events-none disabled:text-gray-800/50 rounded-xl cursor-pointer hover:shadow-[0_4px_16px_rgba(201,169,110,0.25)] flex items-center justify-center"
               >
@@ -847,7 +920,7 @@ export default function ProductDetail() {
             )}
 
             <button
-              disabled={!selectedVariant || selectedVariant.stockQuantity <= 0}
+              disabled={!selectedVariant || selectedVariant.stockQuantity <= 0 || pincodeStatus === 'unavailable'}
               onClick={handleBuyNow}
               className="bg-transparent hover:bg-red-600/10 text-red-600 border-2 border-red-600 py-4 px-6 text-xs font-medium font-bold tracking-[0.2em] uppercase transition-all duration-300 rounded-xl cursor-pointer disabled:border-gray-200 disabled:pointer-events-none disabled:text-gray-800/30 flex items-center justify-center"
             >

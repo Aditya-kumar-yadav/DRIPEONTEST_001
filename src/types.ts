@@ -244,3 +244,12 @@ export interface Inquiry {
   createdAt: string;
 }
 
+export interface ServiceablePincode {
+  id: string;
+  pincode: string;
+  city?: string;
+  state?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+

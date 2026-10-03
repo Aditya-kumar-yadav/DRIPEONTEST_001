@@ -57,10 +57,12 @@ interface AppContextType {
   dismissCancellationRequest: (id: string, adminNotes?: string) => Promise<boolean>;
   confirmDelivery: (id: string, otp: string, paymentMode?: 'cash' | 'upi' | 'card' | 'cod') => Promise<boolean>;
   requestCallbackSupport: (orderId: string, phone: string, topic: string, notes: string) => Promise<boolean>;
-
   // Returns actions
   submitReturn: (orderId: string, orderItemId: string, type: 'RETURN' | 'EXCHANGE', reason: string) => Promise<boolean>;
   fetchUserReturns: () => Promise<ReturnExchangeRequest[]>;
+
+  // Pincode actions
+  checkPincode: (pincode: string) => Promise<{ available: boolean, data?: any }>;
 
   // Wishlist actions
   wishlist: any[];
@@ -443,6 +445,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
+
+  const checkPincode = async (pincode: string) => {
+    try {
+      const res = await apiFetch(`/api/pincodes/check/${pincode}`);
+      return res || { available: false };
+    } catch {
+      return { available: false };
+    }
+  };
 
   useEffect(() => {
     const handleAuthChange = async () => {
@@ -1118,7 +1129,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         deleteCategory,
         globalProducts,
         isProductsLoaded,
-        fetchGlobalProducts
+        fetchGlobalProducts,
+        checkPincode
       }}
     >
       {children}

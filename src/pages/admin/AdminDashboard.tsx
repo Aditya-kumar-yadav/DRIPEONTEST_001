@@ -5,6 +5,7 @@ import { useApp } from '../../AppContext';
 import { useAuth } from '@clerk/clerk-react';
 import { Product, ProductVariant, Order, ReturnExchangeRequest, Coupon, Review, Inquiry } from '../../types';
 import AddProductForm from '../../components/AddProductForm';
+import { AdminLogistics } from '../../components/admin/AdminLogistics';
 import {
   BarChart3, Scissors, Ship, RefreshCw, Settings2, Check,
   Trash2, Edit, Plus, DollarSign, IndianRupee, Package, AlertTriangle,
@@ -25,7 +26,7 @@ import {
   Cell
 } from 'recharts';
 
-type AdminTab = 'stats' | 'products' | 'shoes' | 'orders' | 'returns' | 'settings' | 'users' | 'coupons' | 'audit' | 'inquiries' | 'reviews';
+type AdminTab = 'stats' | 'products' | 'shoes' | 'orders' | 'returns' | 'settings' | 'users' | 'coupons' | 'audit' | 'inquiries' | 'reviews' | 'logistics';
 
 interface TooltipPayloadEntry {
   name: string;
@@ -1817,6 +1818,16 @@ export default function AdminDashboard() {
               }`}
           >
             <RefreshCw className="w-4 h-4" /> Returns
+          </button>
+
+          <button
+            onClick={() => setActiveTab('logistics')}
+            className={`flex items-center gap-3 px-4 py-3 text-sm tracking-wide rounded-xl transition-all duration-200 cursor-pointer font-sans font-medium text-left ${activeTab === 'logistics'
+              ? 'bg-admin-gold/10 text-admin-gold font-bold'
+              : 'text-admin-muted hover:text-admin-text hover:bg-admin-hover'
+              }`}
+          >
+            <MapPin className="w-4 h-4" /> Logistics
           </button>
 
           <button
@@ -4407,6 +4418,11 @@ export default function AdminDashboard() {
                       Save Settings Configuration
                     </button>
                   </form>
+                )}
+
+                {/* VIEW TAB LOGISTICS */}
+                {activeTab === 'logistics' && (
+                  <AdminLogistics />
                 )}
 
                 {/* VIEW VIEW F: ACTIVE USER PRIVILEGES CONTROL PANEL */}

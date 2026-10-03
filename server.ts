@@ -301,6 +301,69 @@ const CACHE_TTL = 1000 * 2; // 2 seconds for live updates
 export const invalidateProductCache = () => {
   productCache = null;
 };
+// --- Pincode Endpoints ---
+app.get('/api/pincodes/check/:pincode', async (req, res) => {
+  try {
+    const { pincode } = req.params;
+    const pin = await prisma.serviceablePincode.findUnique({
+      where: { pincode }
+    });
+    if (pin) {
+      res.json({ available: true, data: pin });
+    } else {
+      res.json({ available: false });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to check pincode' });
+  }
+});
+
+app.get('/api/admin/pincodes', requireAdmin, async (req, res) => {
+  try {
+    const pincodes = await prisma.serviceablePincode.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json(pincodes);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch pincodes' });
+  }
+});
+
+app.post('/api/admin/pincodes', requireAdmin, async (req, res) => {
+  try {
+    const { pincodes } = req.body; // Expecting an array of strings
+    if (!Array.isArray(pincodes)) return res.status(400).json({ error: 'Invalid input' });
+
+    let addedCount = 0;
+    for (const pin of pincodes) {
+      if (!pin.trim()) continue;
+      try {
+        await prisma.serviceablePincode.upsert({
+          where: { pincode: pin.trim() },
+          update: {},
+          create: { pincode: pin.trim() }
+        });
+        addedCount++;
+      } catch (e) {
+        // ignore unique constraints if parallel
+      }
+    }
+    res.json({ success: true, added: addedCount });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to add pincodes' });
+  }
+});
+
+app.delete('/api/admin/pincodes/:id', requireAdmin, async (req, res) => {
+  try {
+    await prisma.serviceablePincode.delete({
+      where: { id: req.params.id }
+    });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete pincode' });
+  }
+});
 
 app.get('/api/products', async (req, res) => {
   try {
