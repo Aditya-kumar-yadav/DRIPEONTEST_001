@@ -1238,13 +1238,27 @@ app.post('/api/orders/:id/cancel', verifyToken, async (req: AuthRequest, res) =>
       return res.status(400).json({ error: `Cannot cancel an order that is already ${order.status.toLowerCase()}.` });
     }
 
-    // Automatically cancel the order immediately upon user request
-    await prisma.order.update({
-      where: { id: order.id },
-      data: { status: 'CANCELLED', cancellationReason: reason || 'Customer requested cancellation' }
-    });
-    notifyAdmins(`Order Cancelled: #${order.id}`, `<p>Order #${order.id} was automatically cancelled by the customer. Reason: ${reason}</p>`);
-    return res.json({ cancelled: true, message: 'Order cancelled successfully.' });
+    // If order is pending/confirmed, directly cancel. Otherwise flag as cancellation requested.
+    if (order.status === 'PENDING' || order.status === 'CONFIRMED') {
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { status: 'CANCELLED', cancellationReason: reason || 'Customer requested cancellation' }
+      });
+      notifyAdmins(`Order Cancelled: #${order.id}`, `<p>Order #${order.id} was cancelled. Reason: ${reason}</p>`);
+      return res.json({ cancelled: true, message: 'Order cancelled successfully.' });
+    } else {
+      // In transit/shipped - flag as cancellation requested for admin review
+      await prisma.order.update({
+        where: { id: order.id },
+        data: {
+          cancellationRequested: true,
+          cancellationRequestedAt: new Date(),
+          cancellationReason: reason || 'Customer requested cancellation'
+        }
+      });
+      notifyAdmins(`Cancellation Request: #${order.id}`, `<p>Customer requested cancellation for Order #${order.id}. Reason: ${reason}</p>`);
+      return res.json({ requestSubmitted: true, message: 'Cancellation request submitted for admin review.' });
+    }
   } catch (err) {
     console.error('[Cancel Order]', err);
     res.status(500).json({ error: 'Failed to process cancellation request.' });
@@ -1527,9 +1541,9 @@ app.get('/api/admin/orders', verifyToken, requireRole('ADMIN'), async (req: Auth
 });
 
 app.patch('/api/admin/orders/:id/status', verifyToken, requireRole('ADMIN'), async (req: AuthRequest, res) => {
-  const { status } = req.body;
-  if (!status) {
-    return res.status(400).json({ error: "Status is required" });
+  const { status, rejectCancellation } = req.body;
+  if (!status && !rejectCancellation) {
+    return res.status(400).json({ error: "Status or rejectCancellation is required" });
   }
 
   try {
@@ -1542,9 +1556,14 @@ app.patch('/api/admin/orders/:id/status', verifyToken, requireRole('ADMIN'), asy
       return res.status(404).json({ error: "Order not found" });
     }
 
+    const updateData: any = {};
+    if (status) updateData.status = status;
+    if (rejectCancellation) updateData.cancellationRequested = false;
+    if (status === 'CANCELLED') updateData.cancellationRequested = false;
+
     const updatedOrder = await prisma.order.update({
       where: { id: order.id },
-      data: { status }
+      data: updateData
     });
 
     if (status === 'CANCELLED') {
@@ -1552,11 +1571,21 @@ app.patch('/api/admin/orders/:id/status', verifyToken, requireRole('ADMIN'), asy
     }
 
     const userEmail = order.user?.email || 'customer@dripeon.com';
-    sendEmail(userEmail, `DRIPEON — Order Status Updated: ${status}`, `
-      <h2>Your Order Status is updated to: ${status}</h2>
-      <p>Order ID: ${order.id}</p>
-      <p>Thank you for shopping at DRIPEON.</p>
-    `);
+    
+    if (rejectCancellation && !status) {
+      sendEmail(userEmail, `DRIPEON — Cancellation Request Rejected`, `
+        <h2>Cancellation Request Update</h2>
+        <p>Order ID: ${order.id}</p>
+        <p>Your request to cancel this order has been reviewed and declined, as the order is already in processing/transit.</p>
+        <p>Thank you for understanding.</p>
+      `);
+    } else if (status) {
+      sendEmail(userEmail, `DRIPEON — Order Status Updated: ${status}`, `
+        <h2>Your Order Status is updated to: ${status}</h2>
+        <p>Order ID: ${order.id}</p>
+        <p>Thank you for shopping at DRIPEON.</p>
+      `);
+    }
 
     res.json(updatedOrder);
   } catch (err) {

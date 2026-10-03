@@ -3964,14 +3964,41 @@ export default function AdminDashboard() {
                                   )}
                                 </td>
 
-                                <td className="px-6 py-4 text-right overflow-visible relative">
-                                  <OrderStatusDropdown
-                                    orderId={order.id}
-                                    currentStatus={order.status}
-                                    onUpdateStatus={handleUpdateOrderStatus}
-                                    isOpen={isDropdownOpen}
-                                    onToggle={(open) => setActiveDropdownOrderId(open ? order.id : null)}
-                                  />
+                                <td className="px-6 py-4 text-right overflow-visible relative flex items-center justify-end gap-2">
+                                  {isCancelRequested ? (
+                                    <>
+                                      <button 
+                                        onClick={() => handleUpdateOrderStatus(order.id, 'CANCELLED')} 
+                                        title="Approve Cancellation"
+                                        className="bg-admin-surface border border-emerald-500/30 text-emerald-500 hover:bg-emerald-950/40 px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all shadow-sm"
+                                      >
+                                        Approve
+                                      </button>
+                                      <button 
+                                        onClick={async () => {
+                                          const token = await getToken();
+                                          await fetch(`/api/admin/orders/${order.id}/status`, {
+                                            method: 'PATCH',
+                                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                            body: JSON.stringify({ rejectCancellation: true })
+                                          });
+                                          loadAdminPayloads(true);
+                                        }}
+                                        title="Reject Cancellation"
+                                        className="bg-admin-surface border border-red-500/30 text-red-500 hover:bg-red-950/40 px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all shadow-sm"
+                                      >
+                                        Reject
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <OrderStatusDropdown
+                                      orderId={order.id}
+                                      currentStatus={order.status}
+                                      onUpdateStatus={handleUpdateOrderStatus}
+                                      isOpen={isDropdownOpen}
+                                      onToggle={(open) => setActiveDropdownOrderId(open ? order.id : null)}
+                                    />
+                                  )}
                                 </td>
                               </tr>
                             );
