@@ -5,6 +5,7 @@ import { Order, OrderStatus } from '../types';
 import { 
   Package, Truck, CheckCircle, Clock, MapPin, 
   ArrowLeft, Copy, Check, Star, Upload, Trash2, 
+  ChevronRight, Calendar, Tag, FileText, Info, Compass,
   PhoneCall, Headphones, AlertTriangle, X, CheckSquare,
   RefreshCw, CheckCircle2, XCircle
 } from 'lucide-react';
