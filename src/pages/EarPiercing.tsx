@@ -237,7 +237,7 @@ export default function EarPiercing() {
               whileInView={{ scale: 1 }}
               transition={{ duration: 1.5 }}
               viewport={{ once: true }}
-              src="https://images.unsplash.com/photo-1519764622345-23439dd774f7?q=80&w=1000&auto=format&fit=crop"
+              src="https://images.unsplash.com/photo-1611591437281-460bfbe1220a?q=80&w=1000&auto=format&fit=crop"
               alt="Brand Lifestyle"
               className="w-full h-full object-cover grayscale brightness-[0.7] contrast-[1.2]"
             />

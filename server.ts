@@ -2293,29 +2293,30 @@ app.post('/api/waitlist', async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: 'Email required' });
   try {
-    const dbPath = path.join(process.cwd(), 'waitlist.json');
-    let emails: string[] = [];
-    if (fs.existsSync(dbPath)) {
-      emails = JSON.parse(await fs.promises.readFile(dbPath, 'utf8'));
+    // Try to create the email in the DB
+    try {
+      await prisma.waitlistEmail.create({
+        data: { email: email.toLowerCase() }
+      });
+    } catch (dbErr: any) {
+      // P2002 is Prisma's unique constraint violation (email already exists)
+      if (dbErr.code !== 'P2002') {
+        throw dbErr; // Rethrow unexpected errors
+      }
     }
-    if (!emails.includes(email.toLowerCase())) {
-      emails.push(email.toLowerCase());
-      await fs.promises.writeFile(dbPath, JSON.stringify(emails));
-    }
-    res.json({ success: true, count: emails.length });
+
+    const count = await prisma.waitlistEmail.count();
+    res.json({ success: true, count });
   } catch (err) {
+    console.error("Waitlist error:", err);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
 app.get('/api/admin/waitlist-count', async (req, res) => {
   try {
-    const dbPath = path.join(process.cwd(), 'waitlist.json');
-    if (fs.existsSync(dbPath)) {
-      const emails = JSON.parse(await fs.promises.readFile(dbPath, 'utf8'));
-      return res.json({ count: emails.length });
-    }
-    res.json({ count: 0 });
+    const count = await prisma.waitlistEmail.count();
+    res.json({ count });
   } catch (err) {
     res.json({ count: 0 });
   }

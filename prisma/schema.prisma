@@ -236,3 +236,9 @@ model Inquiry {
   status    String   @default("PENDING")
   createdAt DateTime @default(now())
 }
+
+model WaitlistEmail {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
