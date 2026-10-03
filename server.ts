@@ -318,7 +318,7 @@ app.get('/api/pincodes/check/:pincode', async (req, res) => {
   }
 });
 
-app.get('/api/admin/pincodes', requireAdmin, async (req, res) => {
+app.get('/api/admin/pincodes', verifyToken, requireRole('ADMIN'), async (req, res) => {
   try {
     const pincodes = await prisma.serviceablePincode.findMany({
       orderBy: { createdAt: 'desc' }
@@ -329,7 +329,7 @@ app.get('/api/admin/pincodes', requireAdmin, async (req, res) => {
   }
 });
 
-app.post('/api/admin/pincodes', requireAdmin, async (req, res) => {
+app.post('/api/admin/pincodes', verifyToken, requireRole('ADMIN'), async (req, res) => {
   try {
     const { pincodes } = req.body; // Expecting an array of strings
     if (!Array.isArray(pincodes)) return res.status(400).json({ error: 'Invalid input' });
@@ -354,7 +354,7 @@ app.post('/api/admin/pincodes', requireAdmin, async (req, res) => {
   }
 });
 
-app.delete('/api/admin/pincodes/:id', requireAdmin, async (req, res) => {
+app.delete('/api/admin/pincodes/:id', verifyToken, requireRole('ADMIN'), async (req, res) => {
   try {
     await prisma.serviceablePincode.delete({
       where: { id: req.params.id }
