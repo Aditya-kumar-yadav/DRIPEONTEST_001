@@ -111,6 +111,7 @@ model Order {
   cancellationRequestedAt DateTime?
   deliveryOtp             String?
   paymentMethod           String?
+  appliedCoupon           String?
   user                    User                    @relation(fields: [userId], references: [id])
   items                   OrderItem[]
   returns                 ReturnExchangeRequest[]

@@ -1040,11 +1040,24 @@ app.post('/api/orders', verifyToken, async (req: AuthRequest, res) => {
       }
 
       // Redeem coupon if provided
+      let finalCouponCode: string | null = null;
       if (couponCode) {
+        const uppercaseCode = couponCode.toUpperCase();
         const coupon = await tx.coupon.findFirst({
-          where: { code: couponCode, isActive: true }
+          where: { code: uppercaseCode, isActive: true }
         });
+        
         if (coupon) {
+          // Check if this exact user already used this coupon to prevent tricks
+          const existingUse = await tx.order.findFirst({
+            where: { userId, appliedCoupon: uppercaseCode }
+          });
+          
+          if (existingUse) {
+            throw new Error("You have already used this coupon on a previous order.");
+          }
+
+          finalCouponCode = uppercaseCode;
           await tx.coupon.update({
             where: { id: coupon.id },
             data: {
@@ -1067,6 +1080,7 @@ app.post('/api/orders', verifyToken, async (req: AuthRequest, res) => {
           paymentId: paymentId || `pay_sim_${Date.now()}`,
           paymentStatus: 'PAID',
           shippingAddress: shippingAddress as any,
+          appliedCoupon: finalCouponCode,
           items: {
             create: orderItemsToCreate
           }
@@ -1476,11 +1490,32 @@ app.post('/api/payments/checkout', verifyToken, async (req: AuthRequest, res) =>
 
     // Apply coupon discount
     let discount = 0;
+    let finalCouponCode: string | null = null;
+    
     if (couponCode) {
-      const coupon = await prisma.coupon.findFirst({ where: { code: couponCode.toUpperCase(), isActive: true } });
+      const uppercaseCode = couponCode.toUpperCase();
+      const coupon = await prisma.coupon.findFirst({ where: { code: uppercaseCode, isActive: true } });
+      
       if (coupon) {
+        // Bulletproof check against repetition
+        const existingUse = await prisma.order.findFirst({
+          where: { userId, appliedCoupon: uppercaseCode }
+        });
+        
+        if (existingUse) {
+          return res.status(400).json({ error: "You have already used this coupon on a previous order." });
+        }
+
         discount = coupon.discountType === 'PERCENT' ? Math.round(total * coupon.discountValue / 100) : coupon.discountValue;
-        await prisma.coupon.update({ where: { id: coupon.id }, data: { usedCount: { increment: 1 } } });
+        finalCouponCode = uppercaseCode;
+        
+        await prisma.coupon.update({ 
+          where: { id: coupon.id }, 
+          data: { 
+            usedCount: { increment: 1 },
+            isActive: (coupon.usedCount + 1) < coupon.maxUses
+          } 
+        });
       }
     }
 
@@ -1501,6 +1536,7 @@ app.post('/api/payments/checkout', verifyToken, async (req: AuthRequest, res) =>
         paymentMethod: paymentMethod || 'card',
         shippingAddress,
         deliveryOtp: otp,
+        appliedCoupon: finalCouponCode,
         items: {
           create: orderItems.map((i, idx) => ({
             id: `item-${orderId}-${idx}`,
@@ -1844,8 +1880,9 @@ app.post('/api/coupons/validate', verifyToken, async (req: AuthRequest, res) => 
   }
 
   try {
+    const couponCode = code.toUpperCase();
     const coupon = await prisma.coupon.findFirst({
-      where: { code: code.toUpperCase(), isActive: true }
+      where: { code: couponCode, isActive: true }
     });
 
     if (!coupon) {
@@ -1854,6 +1891,17 @@ app.post('/api/coupons/validate', verifyToken, async (req: AuthRequest, res) => 
 
     if (cartValue && Number(cartValue) < coupon.minOrderValue) {
       return res.status(400).json({ error: `Minimum order value to redeem this coupon is ₹${coupon.minOrderValue}` });
+    }
+
+    // Check if user has already used this coupon
+    const userId = req.user?.id;
+    if (userId) {
+      const existingOrder = await prisma.order.findFirst({
+        where: { userId, appliedCoupon: couponCode }
+      });
+      if (existingOrder) {
+        return res.status(400).json({ error: "You have already used this coupon on a previous order." });
+      }
     }
 
     res.json(coupon);
