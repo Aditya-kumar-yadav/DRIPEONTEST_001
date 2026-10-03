@@ -2177,9 +2177,9 @@ app.post('/api/admin/upload', verifyToken, requireRole('ADMIN'), upload.single('
     });
 
     res.json({ success: true, imageUrl: result.secure_url });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Cloudinary upload error:", error);
-    res.status(500).json({ success: false, message: 'Image upload failed' });
+    res.status(500).json({ success: false, message: 'Image upload failed', error: error.message || error.toString() });
   }
 });
 

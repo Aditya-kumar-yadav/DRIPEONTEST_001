@@ -81,6 +81,17 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   const uploadFileToCloudinary = async (file: File, itemId: string) => {
     let finalFile = file;
 
+    try {
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true
+      };
+      finalFile = await imageCompression(file, options);
+    } catch (e) {
+      console.error("Compression failed, using original file", e);
+    }
+
     const formData = new FormData();
     formData.append('image', finalFile);
 
