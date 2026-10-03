@@ -1,0 +1,335 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Rubik+Dirt&family=Luckiest+Guy&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* Fila Light/Red Theme */
+  --color-white: #ffffff;
+  --color-gray-50: #f8f9fa;
+  --color-gray-100: #f1f3f5;
+  --color-gray-200: #e9ecef;
+  --color-gray-300: #dee2e6;
+  --color-gray-400: #ced4da;
+  --color-gray-500: #adb5bd;
+  --color-gray-600: #868e96;
+  --color-gray-700: #495057;
+  --color-gray-800: #343a40;
+  --color-gray-900: #111111;
+
+  --color-brand-red: #e00028;
+  --color-blue-600: #e00028;
+  /* Map blue to red to replace gold/blue accents */
+
+  /* Admin specific theme colors requested by user */
+  --color-admin-main: #f9fafb;     /* Light gray main bg */
+  --color-admin-surface: #ffffff;  /* White boxes and sidebar */
+  --color-admin-hover: #f3f4f6;    /* Gray-100 hover */
+  --color-admin-text: #111827;     /* Gray-900 main text */
+  --color-admin-muted: #6b7280;    /* Gray-500 muted text */
+  --color-admin-gold: #dc2626;     /* Red-600 for accents (replaced gold) */
+  --color-admin-green: #16a34a;    /* Green-600 */
+  --color-admin-red: #dc2626;      /* Red-600 */
+  --color-admin-border: #e5e7eb;   /* Gray-200 borders */
+  /* stronger border */
+
+  /* Keep legacy variables for safety, but point them to new palette */
+  --color-brand-black: #111111;
+  --color-brand-white: #ffffff;
+  --color-brand-gold: #e00028;
+  --color-brand-grey: #f1f3f5;
+  --color-brand-muted: #868e96;
+
+  --font-serif: "Inter", system-ui, sans-serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-accent: "Inter", system-ui, sans-serif;
+  --font-podium: "FSP DEMO - PODIUM Sharp 4.11", sans-serif;
+  --font-inter: "Inter", sans-serif;
+  --font-freak: "Luckiest Guy", cursive;
+
+  --animate-fade-up: fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-fade-in: fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-scale-in: scale-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-marquee: marquee 30s linear infinite;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes marquee {
+    0% {
+      transform: translateX(0%);
+    }
+
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  @keyframes scroll-up {
+    0% {
+      transform: translateY(0%);
+    }
+
+    100% {
+      transform: translateY(-50%);
+    }
+  }
+
+  @keyframes scroll-down {
+    0% {
+      transform: translateY(-50%);
+    }
+
+    100% {
+      transform: translateY(0%);
+    }
+  }
+}
+
+html {
+  font-size: 80%;
+  /* Scales all Tailwind rem values to mimic 80% browser zoom */
+}
+
+body {
+  background-color: #ffffff;
+  color: #111111;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+html.lenis {
+  height: auto;
+}
+
+.hover-underline {
+  position: relative;
+}
+
+.hover-underline::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  transform: scaleX(0);
+  height: 2px;
+  bottom: -4px;
+  left: 0;
+  background-color: #e00028;
+  transform-origin: bottom right;
+  transition: transform 0.35s ease-out;
+}
+
+.hover-underline:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pulse-slow {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
+}
+
+.bento-section {
+  display: none;
+}
+
+/* Hide Clerk Internal Footers */
+.cl-footer {
+  display: none !important;
+}
+
+.cl-footerAction {
+  display: none !important;
+}
+
+.cl-internal-1dauvpw {
+  display: none !important;
+}
+
+.cl-internal-1tk342r {
+  display: none !important;
+}
+
+.cl-internal-uv8w3h {
+  display: none !important;
+}
+
+/* Fix browser autofill styling — light theme (white bg, dark text) */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
+  -webkit-text-fill-color: #111111 !important;
+  caret-color: #111111 !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+textarea:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
+  -webkit-text-fill-color: #111111 !important;
+  caret-color: #111111 !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+@layer utilities {
+  .anti-gravity-card {
+    transition: all 0.5s cubic-bezier(0, 0, 0.2, 1);
+  }
+
+  .anti-gravity-card:hover {
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 0 25px 50px -12px rgba(230, 0, 18, 0.25);
+  }
+
+  .animate-fade-up-delay-1 {
+    animation: fade-up 0.8s ease-out 0.2s forwards;
+    opacity: 0;
+  }
+
+  .animate-fade-up-delay-2 {
+    animation: fade-up 0.8s ease-out 0.4s forwards;
+    opacity: 0;
+  }
+
+  .animate-fade-up-delay-3 {
+    animation: fade-up 0.8s ease-out 0.6s forwards;
+    opacity: 0;
+  }
+
+  .animate-fade-up-delay-4 {
+    animation: fade-up 0.8s ease-out 0.8s forwards;
+    opacity: 0;
+  }
+}
+
+/* Anti-Copy & Anti-Drag Protections */
+body {
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+input, textarea {
+  -webkit-user-select: auto;
+  -ms-user-select: auto;
+  user-select: auto;
+}
+
+img {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+}
+
+
+/* Hide global scrollbar but keep scrolling functionality */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* Global Select Dropdown Fixes */
+select { color: inherit; background-color: inherit; }
+option { color: #111827 !important; background-color: #ffffff !important; font-weight: 500; }
+
+* {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
