@@ -642,6 +642,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
           localStorage.setItem('local_cart', JSON.stringify(localCart));
           
+          const localOptimisticId = `local-${variantId}`;
           // Optimistic local update
           setCart(prev => {
             const existing = prev.find(item => item.productVariantId === variantId);
@@ -649,7 +650,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               return prev.map(item => item.productVariantId === variantId ? { ...item, quantity: item.quantity + quantity } : item);
             }
             return [...prev, {
-              id: `local-${variantId}`,
+              id: localOptimisticId,
               userId: 'local',
               productVariantId: variantId,
               quantity,
@@ -659,6 +660,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               product: foundProduct,
             }];
           });
+          setCheckedCartItemIds(prev => Array.from(new Set([...prev, localOptimisticId])));
           setIsCartOpen(true);
           return true;
         }
@@ -695,6 +697,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setCheckedCartItemIds([optimisticItemId]);
       } else {
         setBuyNowMode(false);
+        setCheckedCartItemIds(prev => Array.from(new Set([...prev, optimisticItemId])));
         // Open cart immediately (0ms delay)
         setIsCartOpen(true);
       }
