@@ -1108,12 +1108,7 @@ export default function ProductDetail() {
       {isLightboxOpen && product && (
         <div className="fixed inset-0 bg-[#020906]/98 z-[200] flex flex-col justify-between items-center py-6 px-4 animate-fade-in select-none">
           {/* Top header Controls */}
-          <div className="w-full max-w-7xl flex items-center justify-between z-30">
-            <div className="font-medium text-xs text-red-600 tracking-widest font-semibold">
-              PRODUCT DISPLAY ENGINE / IMAGE {filteredImages.findIndex(img => img.imageUrl === activeImage) + 1} OF {filteredImages.length}
-            </div>
-
-            <div className="flex items-center gap-4">
+          <div className="w-full max-w-7xl flex items-center justify-end z-30">            <div className="flex items-center gap-4">
               <button
                 onClick={() => setLightboxZoom(!lightboxZoom)}
                 className="text-gray-800 hover:text-red-600 font-medium text-[10px] tracking-widest uppercase border border-red-600/20 hover:border-red-600/60 bg-white/40 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
@@ -1171,11 +1166,9 @@ export default function ProductDetail() {
           </div>
 
           {/* Bottom Strip of thumbnails */}
-          <div className="w-full max-w-xl z-30 space-y-3 pb-2">
-            <p className="text-[10px] text-center text-gray-800 font-medium uppercase tracking-widest hidden md:block">
-              Navigate silhouette via thumbnails or arrow directives
-            </p>
-            <div className="flex gap-3 justify-center overflow-x-auto py-1.5 px-4 bg-white/40 border border-red-600/15 rounded-2xl backdrop-blur-md">
+          {filteredImages && filteredImages.length > 1 && (
+            <div className="w-full max-w-xl z-30 space-y-3 pb-2">
+              <div className="flex gap-3 justify-center overflow-x-auto py-1.5 px-4 bg-white/40 border border-gray-400/30 rounded-2xl backdrop-blur-md">
               {filteredImages.map((img, index) => {
                 const isSelected = activeImage === img.imageUrl;
                 return (
@@ -1200,6 +1193,7 @@ export default function ProductDetail() {
               })}
             </div>
           </div>
+          )}
         </div>
       )}
 
