@@ -79,8 +79,8 @@ app.use('/api/', globalLimiter);
 app.use(clerkMiddleware());
 
 // For parsing JSON and urlencoded data
-app.use(express.json({ limit: '5mb' })); // Reduced limit to prevent memory exhaustion attacks
-app.use(express.urlencoded({ extended: true, limit: '5mb' }));
+app.use(express.json({ limit: '50mb' })); // Increased limit to allow base64 banner and audio uploads
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Custom Request Interface
 interface AuthRequest extends express.Request<any, any, any, any> {
@@ -1994,7 +1994,8 @@ app.patch('/api/admin/settings', verifyToken, requireRole('ADMIN'), async (req: 
     freeShippingThreshold, shippingRate, contactEmail,
     homeHeroImage, footwearHeroImage, earPiercingImage, aboutImage,
     clothingStoryImage1, clothingStoryImage2, brandAnthemBase64,
-    deliverablePincodes
+    deliverablePincodes, promoImageBase64, piercingLobeImage,
+    piercingHelixImage, piercingTragusImage, piercingCartilageImage
   } = req.body;
 
   try {
@@ -2016,6 +2017,11 @@ app.patch('/api/admin/settings', verifyToken, requireRole('ADMIN'), async (req: 
     if (clothingStoryImage2 !== undefined) updateData.clothingStoryImage2 = clothingStoryImage2;
     if (brandAnthemBase64 !== undefined) updateData.brandAnthemBase64 = brandAnthemBase64;
     if (deliverablePincodes !== undefined) updateData.deliverablePincodes = deliverablePincodes;
+    if (promoImageBase64 !== undefined) updateData.promoImageBase64 = promoImageBase64;
+    if (piercingLobeImage !== undefined) updateData.piercingLobeImage = piercingLobeImage;
+    if (piercingHelixImage !== undefined) updateData.piercingHelixImage = piercingHelixImage;
+    if (piercingTragusImage !== undefined) updateData.piercingTragusImage = piercingTragusImage;
+    if (piercingCartilageImage !== undefined) updateData.piercingCartilageImage = piercingCartilageImage;
 
     let settings;
     if (existing) {
