@@ -35,15 +35,26 @@ export const SafeImage: React.FC<SafeImageProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasError, setHasError] = useState<boolean>(false);
 
+  // 0. Cloudinary Global CDN Auto-Optimization (Saves 90% bandwidth)
+  const optimizedSrc = React.useMemo(() => {
+    if (!src) return src;
+    if (src.includes('res.cloudinary.com') && src.includes('/upload/')) {
+      if (!src.includes('f_auto') && !src.includes('q_auto')) {
+        return src.replace('/upload/', '/upload/f_auto,q_auto/');
+      }
+    }
+    return src;
+  }, [src]);
+
   // Reset loading and error states if src changes
   useEffect(() => {
-    if (src) {
+    if (optimizedSrc) {
       setIsLoading(true);
       setHasError(false);
 
       // Pre-check if image is already cached/complete to prevent infinite spinner
       const img = new Image();
-      img.src = src;
+      img.src = optimizedSrc;
       if (img.complete) {
         setIsLoading(false);
       }
@@ -51,10 +62,10 @@ export const SafeImage: React.FC<SafeImageProps> = ({
       setHasError(true);
       setIsLoading(false);
     }
-  }, [src]);
+  }, [optimizedSrc]);
 
   // 1. Error Fallback - Branded Luxury Aesthetic
-  if (hasError || !src) {
+  if (hasError || !optimizedSrc) {
     return (
       <div
         className={`flex flex-col items-center justify-center bg-white border border-neutral-900 rounded-xl p-6 text-center select-none ${aspectRatio} ${containerClassName}`}
@@ -97,7 +108,7 @@ export const SafeImage: React.FC<SafeImageProps> = ({
   // 3. Complete Image rendering logic
   const imageElement = (
     <img
-      src={src}
+      src={optimizedSrc}
       alt={alt || 'DRIPEON Luxury Silhouette'}
       onLoad={() => setIsLoading(false)}
       onError={() => {
