@@ -48,7 +48,7 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'yraj15927@gmail.com';
 // 1. Set Security HTTP Headers (Helmet)
 // Disables x-powered-by, sets strict transport security, cross-site scripting filters, etc.
 app.use(helmet({
-  contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
+  contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false,
 }));
 
