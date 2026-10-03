@@ -9,7 +9,6 @@ import { SafeImage } from '../components/SafeImage';
 import { ParticleCard, GlobalSpotlight } from '../components/MagicBentoCard';
 import CountUp from '../components/CountUp';
 import Lens from '../components/Lens';
-import PincodeChecker from '../components/PincodeChecker';
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
