@@ -665,9 +665,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
 
       // ⚡ AUTHENTICATED: Fully Optimistic update
+      const existingInCart = cart.find(item => item.productVariantId === variantId);
+      const optimisticItemId = existingInCart ? existingInCart.id : `temp-${variantId}-${Date.now()}`;
+
       setCart(prev => {
-        const existing = prev.find(item => item.productVariantId === variantId);
-        if (existing) {
+        if (existingInCart) {
           return prev.map(item =>
             item.productVariantId === variantId
               ? { ...item, quantity: item.quantity + quantity }
@@ -676,7 +678,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
         // New item — add with temp id and enriched data instantly
         const tempItem: EnrichedCartItem = {
-          id: `temp-${variantId}-${Date.now()}`,
+          id: optimisticItemId,
           userId: user?.id || '',
           productVariantId: variantId,
           quantity,
@@ -690,6 +692,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       if (isBuyNow) {
         setBuyNowMode(true);
+        setCheckedCartItemIds([optimisticItemId]);
       } else {
         setBuyNowMode(false);
         // Open cart immediately (0ms delay)
