@@ -1198,6 +1198,19 @@ app.post('/api/orders/:id/review', verifyToken, async (req: AuthRequest, res) =>
       }
     }
 
+    // Mark the order as reviewed so the user cannot review it again
+    await prisma.order.update({
+      where: { id: req.params.id },
+      data: {
+        review: {
+          rating: Number(rating),
+          comment,
+          reviewImages: reviewImages || [],
+          createdAt: new Date().toISOString()
+        }
+      }
+    });
+
     res.status(201).json({ message: "Reviews submitted successfully" });
   } catch (err) {
     res.status(500).json({ error: "Failed to submit reviews" });
