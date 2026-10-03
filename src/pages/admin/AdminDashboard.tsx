@@ -271,7 +271,7 @@ const isClothingCategory = (category: string) =>
 
 export default function AdminDashboard() {
   const { getToken } = useAuth();
-  const { user, isAdmin, settings, refreshSettings, addToast, logout, cancelOrder, dismissCancellationRequest, globalProducts } = useApp();
+  const { user, isAdmin, settings, refreshSettings, addToast, logout, cancelOrder, dismissCancellationRequest, globalProducts, categories: appCategories, deleteCategory } = useApp();
   const navigate = useNavigate();
   const isSuperAdmin = user && ['admin@dripeon.com', 'DRIPEON@gmail.com', 'yraj15927@gmail.com', 'btech60045.24@bitmesra.ac.in'].some(
     email => email.toLowerCase() === (user.email || '').toLowerCase()
@@ -318,6 +318,7 @@ export default function AdminDashboard() {
   const [categoryPage, setCategoryPage] = useState(1);
   const [allStockFilterState, setAllStockFilterState] = useState<'all' | 'in_stock' | 'low_stock' | 'out_of_stock'>('all');
   
+  const [isInventoryCatDropdownOpen, setIsInventoryCatDropdownOpen] = useState(false);
   const [categoryCategoryFilter, setCategoryCategoryFilter] = useState('all');
   const [categoryBrandFilter, setCategoryBrandFilter] = useState('all');
   const [categorySizeFilter, setCategorySizeFilter] = useState('all');
@@ -3255,23 +3256,72 @@ export default function AdminDashboard() {
 
                           {/* Filtering Grid */}
                           <div className="grid grid-cols-2 md:grid-cols-6 gap-3 text-sm">
-                            <div className="flex flex-col gap-1">
+                            <div className="flex flex-col gap-1 relative">
                               <label className="text-xs font-mono font-bold uppercase tracking-wider text-admin-muted">Category</label>
-                              <select
-                                value={categoryCategoryFilter}
-                                onChange={(e) => { setCategoryCategoryFilter(e.target.value); setCategoryPage(1); }}
-                                className="bg-admin-surface border border-admin-gold/20 rounded-xl p-2 font-semibold text-admin-text focus:outline-none cursor-pointer font-sans"
-                              >
-                                <option value="all">All Categories</option>
-                                {Array.from(new Set(products.filter(p => {
-                                  if (inventorySubTab === 'clothing') return isClothingCategory(p.category);
-                                  if (inventorySubTab === 'accessories') return isOrnamentCategory(p.category);
-                                  if (inventorySubTab === 'caps') return isCapsCategory(p.category);
-                                  return !isFootwearCategory(p.category);
-                                }).map(p => p.category))).map(cat => (
-                                  <option key={cat} value={cat}>{cat.toLowerCase().replace('_', ' ')}</option>
-                                ))}
-                              </select>
+                              <div className="relative">
+                                <button
+                                  type="button"
+                                  onClick={() => setIsInventoryCatDropdownOpen(!isInventoryCatDropdownOpen)}
+                                  className="w-full bg-admin-surface border border-admin-gold/20 rounded-xl p-2 font-semibold text-admin-text focus:outline-none cursor-pointer flex justify-between items-center capitalize"
+                                >
+                                  <span className="line-clamp-1 text-left">{categoryCategoryFilter === 'all' ? 'All Categories' : categoryCategoryFilter.toLowerCase().replace('_', ' ')}</span>
+                                  <span className="text-[10px] ml-2 shrink-0">▼</span>
+                                </button>
+                                {isInventoryCatDropdownOpen && (
+                                  <div className="absolute z-50 w-full mt-1 bg-admin-surface border border-admin-gold/20 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                                    <div 
+                                      className="flex justify-between items-center px-3 py-2.5 hover:bg-admin-hover border-b border-admin-gold/10 cursor-pointer transition-colors" 
+                                      onClick={() => { setCategoryCategoryFilter('all'); setCategoryPage(1); setIsInventoryCatDropdownOpen(false); }}
+                                    >
+                                      <span className="text-admin-text font-bold text-sm">All Categories</span>
+                                    </div>
+                                    {Array.from(new Set(products.filter(p => {
+                                      if (inventorySubTab === 'clothing') return isClothingCategory(p.category);
+                                      if (inventorySubTab === 'accessories') return isOrnamentCategory(p.category);
+                                      if (inventorySubTab === 'caps') return isCapsCategory(p.category);
+                                      return !isFootwearCategory(p.category);
+                                    }).map(p => p.category))).map(cat => {
+                                      const count = products.filter(p => p.category === cat).length;
+                                      return (
+                                        <div key={cat} className="flex justify-between items-center px-3 py-2 hover:bg-admin-hover border-b border-admin-gold/10 last:border-0 group transition-colors">
+                                          <button
+                                            type="button"
+                                            className="flex-1 text-left text-sm text-admin-text capitalize font-medium"
+                                            onClick={() => {
+                                              setCategoryCategoryFilter(cat);
+                                              setCategoryPage(1);
+                                              setIsInventoryCatDropdownOpen(false);
+                                            }}
+                                          >
+                                            {cat.toLowerCase().replace('_', ' ')} <span className="text-admin-muted font-bold text-[10px] ml-1">({count})</span>
+                                          </button>
+                                          <button
+                                            type="button"
+                                            className="text-red-500 hover:text-red-600 opacity-30 hover:opacity-100 transition-opacity p-1 shrink-0 ml-2"
+                                            title="Delete Category completely"
+                                            onClick={async (e) => {
+                                              e.stopPropagation();
+                                              const catObj = appCategories.find(c => c.name === cat);
+                                              if (!catObj) {
+                                                addToast("Cannot resolve category ID.", "error");
+                                                return;
+                                              }
+                                              if (window.confirm(`WARNING: Are you absolutely sure you want to delete "${cat}"? This will permanently delete the category and all ${count} products inside it. This action cannot be undone.`)) {
+                                                const success = await deleteCategory(catObj.id, true);
+                                                if (success) {
+                                                  if (categoryCategoryFilter === cat) setCategoryCategoryFilter('all');
+                                                }
+                                              }
+                                            }}
+                                          >
+                                            ✕
+                                          </button>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </div>
                             </div>
 
                             <div className="flex flex-col gap-1">
