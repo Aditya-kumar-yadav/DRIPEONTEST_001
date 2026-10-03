@@ -1238,27 +1238,13 @@ app.post('/api/orders/:id/cancel', verifyToken, async (req: AuthRequest, res) =>
       return res.status(400).json({ error: `Cannot cancel an order that is already ${order.status.toLowerCase()}.` });
     }
 
-    // If order is pending/confirmed, directly cancel. Otherwise flag as cancellation requested.
-    if (order.status === 'PENDING' || order.status === 'CONFIRMED') {
-      await prisma.order.update({
-        where: { id: order.id },
-        data: { status: 'CANCELLED', cancellationReason: reason || 'Customer requested cancellation' }
-      });
-      notifyAdmins(`Order Cancelled: #${order.id}`, `<p>Order #${order.id} was cancelled. Reason: ${reason}</p>`);
-      return res.json({ cancelled: true, message: 'Order cancelled successfully.' });
-    } else {
-      // In transit/shipped - flag as cancellation requested for admin review
-      await prisma.order.update({
-        where: { id: order.id },
-        data: {
-          cancellationRequested: true,
-          cancellationRequestedAt: new Date(),
-          cancellationReason: reason || 'Customer requested cancellation'
-        }
-      });
-      notifyAdmins(`Cancellation Request: #${order.id}`, `<p>Customer requested cancellation for Order #${order.id}. Reason: ${reason}</p>`);
-      return res.json({ requestSubmitted: true, message: 'Cancellation request submitted for admin review.' });
-    }
+    // Automatically cancel the order immediately upon user request
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { status: 'CANCELLED', cancellationReason: reason || 'Customer requested cancellation' }
+    });
+    notifyAdmins(`Order Cancelled: #${order.id}`, `<p>Order #${order.id} was automatically cancelled by the customer. Reason: ${reason}</p>`);
+    return res.json({ cancelled: true, message: 'Order cancelled successfully.' });
   } catch (err) {
     console.error('[Cancel Order]', err);
     res.status(500).json({ error: 'Failed to process cancellation request.' });

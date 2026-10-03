@@ -586,12 +586,12 @@ export default function Account(): React.JSX.Element {
         <div>
           <span className="text-[10px] font-medium text-red-600 uppercase tracking-[0.3em] font-semibold">MEMBER EXCLUSIVITY ACCREDITATION</span>
           <h1 className="font-sans text-3xl sm:text-4xl text-gray-900 uppercase mt-1 tracking-wide">
-            SALUTATI, {user.name}
+            {user.name}
           </h1>
           <div className="flex items-center gap-3 mt-1.5 font-medium text-[10px] text-gray-500 uppercase">
             <span>{user.email}</span>
             <span className="text-brand-grey">•</span>
-            <span className="text-red-600 font-semibold">Premium Tier I Client</span>
+            <span className="text-red-600 font-semibold">Verified Customer</span>
           </div>
         </div>
       </div>
