@@ -108,11 +108,16 @@ export default function AuthContainer({ initialMode }: AuthContainerProps) {
         <ArrowLeft className="w-3.5 h-3.5 transform group-hover:-translate-x-1 transition-transform" />
         <span>Return to Home</span>
       </Link>
-      {/* Background Image */}
-      <div 
-        className="absolute inset-0 w-full h-full bg-cover bg-center opacity-40"
-        style={{ backgroundImage: `url('https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&q=80&w=1920')` }}
-      />
+      {/* Background Video */}
+      <video
+        className="absolute inset-0 w-full h-full object-cover opacity-60"
+        autoPlay
+        muted
+        loop
+        playsInline
+      >
+        <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260606_154941_df1a96e1-a06f-450c-bd02-d863414cc1a0.mp4" type="video/mp4" />
+      </video>
 
       {/* Auth Forms (Left Side / Full on Mobile) */}
       <div className="relative z-10 w-full lg:w-1/2 h-full flex flex-col items-center justify-center px-6 lg:items-start lg:pl-16 xl:pl-24">
