@@ -776,7 +776,10 @@ export default function AddProductForm({ product, onSaveSuccess, onCancel }: Add
               />
               <p className="text-[11px] text-black font-bold">Enter properties separated by colons representing table fields.</p>
             </div>
-          </d        {/* Section 2: Lookbook images showroom */}
+          </div>
+        </div>
+
+        {/* Section 2: Lookbook images showroom */}
         <div className="space-y-5">
           <div className="flex items-center gap-2 border-b border-black pb-2">
             <Image className="w-4 h-4 text-red-600" />
