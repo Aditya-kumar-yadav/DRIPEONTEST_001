@@ -265,7 +265,19 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   };
 
   return (
-    <div className="space-y-4" id="custom-media-uploader-container">
+    <div 
+      className="space-y-4" 
+      id="custom-media-uploader-container"
+      onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+      onDrop={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          const pseudoEvent = { target: { files: e.dataTransfer.files } } as any;
+          handleFileChange(pseudoEvent);
+        }
+      }}
+    >
       {/* Visual Hidden Input with restricted mimetype selection */}
       <input
         type="file"
@@ -277,24 +289,21 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         id="hidden-lookbook-input"
       />
 
-      {/* Visually stunning trigger option button */}
-      <div className="flex flex-wrap items-center gap-4">
-        <button
-          type="button"
-          onClick={triggerFileExplorer}
-          className="group flex items-center justify-center gap-2.5 px-5 py-3.5 bg-[#121212] hover:bg-red-600 text-neutral-300 hover:text-black border border-red-600/20 hover:border-transparent rounded-xl transition-all duration-300 active:scale-98 cursor-pointer select-none font-medium text-xs tracking-wider uppercase font-medium shadow-lg"
-          id="custom-file-picker-trigger"
-        >
+      {/* Drag & Drop trigger option button */}
+      <div 
+        onClick={triggerFileExplorer}
+        className="group flex flex-col items-center justify-center gap-3 w-full min-h-[140px] p-6 bg-[#121212] hover:bg-[#1a1a1a] border-2 border-dashed border-neutral-700 hover:border-red-600 rounded-2xl transition-all duration-300 cursor-pointer select-none text-neutral-400 hover:text-white"
+      >
+        <div className="flex items-center gap-2">
           {multiple ? (
-            <Plus size={14} className="transition-transform group-hover:rotate-90 duration-300" />
+            <Plus size={24} className="text-red-600 transition-transform group-hover:rotate-90 duration-300" />
           ) : (
-            <Camera size={14} className="transition-transform group-hover:scale-110" />
+            <Camera size={24} className="text-red-600 transition-transform group-hover:scale-110" />
           )}
-          <span>{label}</span>
-        </button>
-
-        <span className="text-[10px] font-medium text-neutral-500 uppercase tracking-widest cursor-default">
-          {multiple ? "Supports multi-file gallery queue" : "Single high-fidelity look select"}
+          <span className="font-bold text-sm tracking-wider uppercase">{label || "Click or Drag to Upload"}</span>
+        </div>
+        <span className="text-[10px] font-medium text-neutral-500 uppercase tracking-widest">
+          {multiple ? "Drop multiple images here" : "Drop an image here"}
         </span>
       </div>
 

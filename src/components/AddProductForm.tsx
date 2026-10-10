@@ -776,64 +776,23 @@ export default function AddProductForm({ product, onSaveSuccess, onCancel }: Add
               />
               <p className="text-[11px] text-black font-bold">Enter properties separated by colons representing table fields.</p>
             </div>
-          </div>
-        </div>
-
-        {/* Section 2: Lookbook images showroom */}
+          </d        {/* Section 2: Lookbook images showroom */}
         <div className="space-y-5">
           <div className="flex items-center gap-2 border-b border-black pb-2">
             <Image className="w-4 h-4 text-red-600" />
             <h3 className="text-base font-black text-red-600 uppercase tracking-widest flex items-center gap-2">
-              2. Garment Visual Lookbook Gallery <span className="text-[10px] text-black font-bold font-sans normal-case tracking-normal">(Divided and manageable by specific clothes color)</span>
+              2. Garment Image Gallery
             </h3>
           </div>
 
-          <div className="bg-black border-2 border-black rounded-2xl p-5 space-y-5">
+          <div className="bg-black border-2 border-black rounded-2xl p-5 space-y-6">
             
-            {/* Color-wise Lookbook Filtering and Tagging Tabs */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               <span className="text-[11px] font-medium uppercase tracking-wider text-red-600 font-bold block flex items-center gap-1.5">
-                🎨 Filter Lookbook by Color Tag:
-              </span>
-              <div className="flex flex-wrap gap-2 pb-3 border-b border-gray-200/20">
-                <button
-                  type="button"
-                  onClick={() => setActiveColorFilter('ALL')}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium uppercase tracking-wider transition-all cursor-pointer ${
-                    activeColorFilter === 'ALL'
-                      ? 'bg-red-600 text-gray-900 font-bold border border-red-600'
-                      : 'bg-white border border-gray-200/30 text-gray-500 hover:text-gray-900'
-                  }`}
-                >
-                  All Gallery ({images.length})
-                </button>
-
-                {selectedColors.map(color => {
-                  const count = images.filter(img => img.color === color).length;
-                  return (
-                    <button
-                      key={color}
-                      type="button"
-                      onClick={() => setActiveColorFilter(color)}
-                      className={`px-4 py-2 rounded-xl text-sm font-medium uppercase tracking-wider transition-all cursor-pointer ${
-                        activeColorFilter === color
-                          ? 'bg-red-600 text-gray-900 font-bold border border-red-600'
-                          : 'bg-white border border-gray-200/30 text-gray-500 hover:text-red-600'
-                      }`}
-                    >
-                      {color} Clothes ({count})
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <span className="text-[10px] text-[#82a39a] font-medium uppercase tracking-wider block font-semibold">
-                📸 Method A: Upload images directly into the <span className="text-red-600 font-bold uppercase">{activeColorFilter === 'ALL' ? 'Selected' : activeColorFilter}</span> folder
+                📸 Upload Images
               </span>
               <ImageUploader 
-                label={`Click to upload pictures for ${activeColorFilter === 'ALL' ? 'General / All' : activeColorFilter}`}
+                label={`Select or Drop Gallery Images`}
                 multiple={true}
                 initialUrls={images.map(img => img.imageUrl)}
                 onFilesChange={(urls) => {
@@ -841,7 +800,7 @@ export default function AddProductForm({ product, onSaveSuccess, onCancel }: Add
                     const existing = images.find(img => img.imageUrl === url);
                     return {
                       imageUrl: url,
-                      color: existing ? existing.color : (activeColorFilter === 'ALL' ? undefined : activeColorFilter)
+                      color: existing ? existing.color : undefined
                     };
                   });
                   setImages(updated);
@@ -849,17 +808,14 @@ export default function AddProductForm({ product, onSaveSuccess, onCancel }: Add
               />
             </div>
 
-            <div className="border-t border-gray-200/40 pt-4 space-y-2.5">
-              <span className="text-sm text-red-600 font-semibold uppercase tracking-wider block">
-                🔗 Option B: Or Use an Image Web URL
+            <div className="border-t border-gray-200/20 pt-4 space-y-2.5">
+              <span className="text-[11px] font-medium uppercase tracking-wider text-red-600 font-bold block">
+                🔗 Or Use an Image Web URL
               </span>
-              <p className="text-sm text-gray-500 leading-relaxed">
-                Add an image web address. It will automatically associate with the <span className="text-red-600 font-bold underline">{activeColorFilter === 'ALL' ? 'General' : activeColorFilter}</span> clothes filter:
-              </p>
               <div className="flex gap-2.5">
                 <input
                   type="url"
-                  placeholder="Example: https://images.unsplash.com/photo-1594938298603-c8148c4dae35"
+                  placeholder="Example: https://images.unsplash.com/photo-1594938298603"
                   value={newImageUrl}
                   onChange={(e) => setNewImageUrl(e.target.value)}
                   className="flex-grow bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:border-red-600 focus:outline-none transition-colors"
@@ -874,112 +830,90 @@ export default function AddProductForm({ product, onSaveSuccess, onCancel }: Add
               </div>
             </div>
 
-            {/* Quick Presets Selector */}
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm text-gray-500 font-medium">Image Placeholders:</span>
-              {POPULAR_PLACEHOLDERS.map((url, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => handleQuickAddImage(url)}
-                  className="rounded-lg w-10 h-10 border border-gray-200/40 hover:border-red-600/60 overflow-hidden relative cursor-pointer flex-shrink-0"
-                >
-                  <img src={url} alt="" className="w-full h-full object-cover rounded-lg" />
-                  <div className="absolute inset-0 bg-black/45 hover:bg-transparent flex items-center justify-center transition-colors">
-                    <Plus className="w-3.5 h-3.5 text-gray-900" />
-                  </div>
-                </button>
-              ))}
-            </div>
+            {/* Selected image cards listing */}
+            {images.length === 0 ? (
+              <div className="border border-dashed border-gray-200/20 rounded-xl p-8 text-center text-sm text-gray-500 uppercase">
+                No pictures uploaded yet.
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
+                {images.map((img, originalIndex) => (
+                  <div 
+                    key={originalIndex} 
+                    className={`relative rounded-xl overflow-hidden group border h-44 flex flex-col justify-between ${
+                      originalIndex === 0 ? 'border-red-600 ring-1 ring-brand-gold/50' : 'border-gray-200'
+                    }`}
+                  >
+                    <div className="relative flex-grow overflow-hidden">
+                      <SafeImage src={img.imageUrl} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                      
+                      {/* Primary Badge overlay */}
+                      {originalIndex === 0 && (
+                        <span className="absolute top-2 left-2 bg-red-600/90 text-[9px] font-medium tracking-wider text-gray-900 px-1.5 py-0.5 rounded shadow-sm font-bold">
+                          COVER
+                        </span>
+                      )}
 
-            {/* Selected image cards listing filtered by active tab */}
-            {(() => {
-              const filteredList = activeColorFilter === 'ALL' 
-                ? images 
-                : images.filter(img => img.color === activeColorFilter);
+                      {img.color && (
+                        <span className="absolute top-2 right-2 bg-black/85 border border-red-600/40 text-red-600 text-[9px] tracking-wider uppercase px-2 py-0.5 rounded font-bold font-medium">
+                          {img.color}
+                        </span>
+                      )}
 
-              if (filteredList.length === 0) {
-                return (
-                  <div className="border border-dashed border-gray-200 rounded-xl p-8 text-center text-sm text-gray-500 uppercase">
-                    No pictures uploaded under the <span className="text-red-600 font-bold">{activeColorFilter}</span> filter.
-                  </div>
-                );
-              }
+                      {/* Order indicator */}
+                      <span className="absolute bottom-2 left-2 bg-black/75 text-[10px] font-medium text-gray-900 px-2 py-0.5 rounded font-medium">
+                        #{originalIndex + 1}
+                      </span>
 
-              return (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
-                  {filteredList.map((img, index) => {
-                    const originalIndex = images.findIndex(item => item.imageUrl === img.imageUrl);
-                    return (
-                      <div 
-                        key={originalIndex} 
-                        className={`relative rounded-xl overflow-hidden group border h-44 flex flex-col justify-between ${
-                          originalIndex === 0 ? 'border-red-600 ring-1 ring-brand-gold/50' : 'border-gray-200'
-                        }`}
+                      {/* Delete trigger */}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(originalIndex)}
+                        className="absolute top-1.5 right-1.5 hidden group-hover:flex w-7 h-7 bg-red-600 hover:bg-red-700 text-gray-900 items-center justify-center rounded-lg transition-all cursor-pointer shadow-lg animate-fade-in"
                       >
-                        <div className="relative flex-grow overflow-hidden">
-                          <SafeImage src={img.imageUrl} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    {/* Inline Image Role / Color Tag Manager */}
+                    <div className="bg-white border-t border-gray-200/30 p-2 flex items-center justify-between text-[10px]">
+                      <span className="text-gray-500 uppercase font-medium tracking-wider flex-shrink-0">Role:</span>
+                      <select
+                        value={originalIndex === 0 ? 'COVER' : (img.color || '')}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const updated = [...images];
                           
-                          {/* Primary Badge overlay */}
-                          {originalIndex === 0 && (
-                            <span className="absolute top-2 left-2 bg-red-600/90 text-[9px] font-medium tracking-wider text-gray-900 px-1.5 py-0.5 rounded shadow-sm font-bold">
-                              COVER
-                            </span>
-                          )}
+                          if (val === 'COVER') {
+                            const [selected] = updated.splice(originalIndex, 1);
+                            selected.color = undefined;
+                            updated.unshift(selected);
+                          } else {
+                            updated[originalIndex] = { ...updated[originalIndex], color: val || undefined };
+                          }
+                          
+                          setImages(updated);
+                        }}
+                        className="bg-transparent border-none text-red-600 uppercase font-bold tracking-wider cursor-pointer focus:outline-none w-full text-right truncate ml-1"
+                      >
+                        <option value="COVER">Cover Image</option>
+                        <option value="">General</option>
+                        {selectedColors.map(c => (
+                          <option key={c} value={c} className="bg-white">{c}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
-                          {img.color && (
-                            <span className="absolute top-2 right-2 bg-black/85 border border-red-600/40 text-red-600 text-[9px] tracking-wider uppercase px-2 py-0.5 rounded font-bold font-medium">
-                              {img.color}
-                            </span>
-                          )}
-
-                          {/* Order indicator */}
-                          <span className="absolute bottom-2 left-2 bg-black/75 text-[10px] font-medium text-gray-900 px-2 py-0.5 rounded font-medium">
-                            #{originalIndex + 1}
-                          </span>
-
-                          {/* Delete trigger */}
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveImage(originalIndex)}
-                            className="absolute top-1.5 right-1.5 hidden group-hover:flex w-7 h-7 bg-red-600 hover:bg-red-700 text-gray-900 items-center justify-center rounded-lg transition-all cursor-pointer shadow-lg animate-fade-in"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-
-                        {/* Inline color drop down tag manager */}
-                        <div className="bg-white border-t border-gray-200/30 p-2 flex items-center justify-between text-[10px]">
-                          <span className="text-gray-500 uppercase font-medium tracking-wider">Garment:</span>
-                          <select
-                            value={img.color || ''}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              const updated = [...images];
-                              updated[originalIndex] = { ...updated[originalIndex], color: val || undefined };
-                              setImages(updated);
-                            }}
-                            className="bg-transparent border-none text-red-600 uppercase font-medium tracking-wider font-bold cursor-pointer focus:outline-none"
-                          >
-                            <option value="">General</option>
-                            {selectedColors.map(c => (
-                              <option key={c} value={c} className="bg-white">{c}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })()}
-
-            <div className="text-sm text-gray-500 flex items-center gap-1.5">
+            <div className="text-[11px] text-gray-500 flex items-center gap-1.5">
               <Info className="w-4 h-4 text-red-600 flex-shrink-0" />
-              <span>Tip: Assigning custom color tags allows the store's detailed viewer to automatically display only matching clothes when a buyer switches colors.</span>
+              <span>Tip: The first image (Cover Image) will be used as the primary thumbnail. You can assign colors to other images so they show up when a buyer selects that color.</span>
             </div>
-
           </div>
+        </div>          </div>
         </div>
 
         {/* Section 3: Colors & Sizes combination builder */}
