@@ -492,86 +492,30 @@ export default function AddProductForm({ product, onSaveSuccess, onCancel }: Add
               />
             </div>
             
-            <div className="space-y-1.5">
-              <div className="flex justify-between items-center">
-                <label className="text-sm text-black font-black uppercase tracking-wider block">
-                  Category
-                </label>
-                <div className="flex gap-2">
-                  <button type="button" onClick={() => setIsAddingCategory(!isAddingCategory)} className="text-[10px] bg-black text-white hover:bg-red-600 font-bold px-2 py-1 rounded transition-colors">+ Add</button>
-                </div>
-              </div>
-              {isAddingCategory && (
-                <div className="flex gap-2 mb-2">
-                  <input type="text" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="New category name..." className="flex-1 border-2 border-black rounded px-3 py-1.5 text-sm font-bold text-black focus:outline-none focus:border-red-600" />
-                  <button type="button" onClick={async () => {
-                    if (newCategoryName.trim()) {
-                      const success = await addCategory(newCategoryName.trim(), productType as any);
-                      if (success) {
-                        setCategory(newCategoryName.trim());
-                        setNewCategoryName('');
-                        setIsAddingCategory(false);
-                      }
-                    }
-                  }} className="bg-red-600 text-gray-900 text-sm px-3 py-1.5 rounded hover:bg-red-700">Save</button>
-                </div>
-              )}
+            <div className="space-y-1.5 flex-1 relative z-20">
+              <label className="text-sm text-black font-black uppercase tracking-wider block">
+                Category
+              </label>
               <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                  className="w-full bg-white border-2 border-black rounded-xl px-4 py-3 text-base text-black font-bold focus:border-red-600 focus:outline-none transition-colors uppercase flex justify-between items-center"
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full bg-white border-2 border-black rounded-xl px-4 py-3 text-base text-black font-bold focus:border-red-600 focus:outline-none transition-colors uppercase appearance-none cursor-pointer"
+                  required
                 >
-                  <span>{category || 'Select a category'}</span>
+                  <option value="" disabled>Select a category</option>
+                  {categories
+                    .filter(c => c.type === productType)
+                    .map(cat => (
+                      <option key={cat.id} value={cat.name}>
+                        {cat.name}
+                      </option>
+                    ))
+                  }
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-black">
                   <span className="text-black text-sm">▼</span>
-                </button>
-                {isCategoryDropdownOpen && (
-                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
-                    {categories.filter(c => c.type === productType).map(cat => (
-                      <div key={cat.id} className="flex justify-between items-center px-4 py-2 hover:bg-gray-50 border-b border-gray-200 last:border-0 group">
-                        <button
-                          type="button"
-                          className="flex-1 text-left text-base text-gray-900 capitalize"
-                          onClick={() => {
-                            setCategory(cat.name);
-                            setIsCategoryDropdownOpen(false);
-                          }}
-                        >
-                          {cat.name}
-                        </button>
-                        <button
-                          type="button"
-                          className="text-red-600 hover:text-red-700 p-1 opacity-50 hover:opacity-100 transition-opacity"
-                          onClick={async (e) => {
-                            e.stopPropagation();
-                            try {
-                              const token = await getToken();
-                              const res = await fetch(`/api/admin/categories/${cat.id}/products-count`, { headers: { 'Authorization': `Bearer ${token}`, 'X-User-Email': user?.email || '' } });
-                              const data = await res.json();
-                              const count = data.count || 0;
-                              
-                              if (window.confirm(`Are you sure you want to delete this category? It contains ${count} products which will also be deleted.`)) {
-                                if (await deleteCategory(cat.id, true)) {
-                                  if (category === cat.name) {
-                                    const remaining = categories.filter(c => c.id !== cat.id && c.type === productType);
-                                    setCategory(remaining.length > 0 ? remaining[0].name : '');
-                                  }
-                                }
-                              }
-                            } catch (err) {
-                              console.error(err);
-                            }
-                          }}
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                    {categories.filter(c => c.type === productType).length === 0 && (
-                      <div className="px-4 py-3 text-base text-gray-500 text-center">No categories found.</div>
-                    )}
-                  </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
