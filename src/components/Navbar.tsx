@@ -804,7 +804,7 @@ export default function Navbar() {
                             className="flex items-center justify-between gap-4 p-2 rounded-xl border border-white/50 bg-white/30 backdrop-blur-md hover:bg-white/70 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(0,0,0,0.05)] hover:border-red-600/30 transition-all duration-300 group cursor-pointer"
                           >
                             <Link
-                              to={`/product/${p.slug}`}
+                              to={`/products/${p.slug}`}
                               state={{ openLightbox: true }}
                               className="flex items-center gap-3.5 flex-1 select-none text-left"
                             >
@@ -829,7 +829,7 @@ export default function Navbar() {
                             </Link>
 
                             <Link
-                              to={`/product/${p.slug}`}
+                              to={`/products/${p.slug}`}
                               state={{ openLightbox: true }}
                               className="px-3 py-1.5 bg-white/60 backdrop-blur-sm select-none hover:bg-red-600 border border-white/60 group-hover:border-red-600/30 text-gray-900 hover:text-white rounded-lg text-[9px] uppercase tracking-widest font-medium font-black transition-all duration-300 hover:scale-105 active:scale-95"
                             >

@@ -85,9 +85,14 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
       const options = {
         maxSizeMB: 1,
         maxWidthOrHeight: 1920,
-        useWebWorker: true
+        useWebWorker: true,
+        fileType: 'image/webp' as any
       };
-      finalFile = await imageCompression(file, options);
+      const compressedBlob = await imageCompression(file, options);
+      
+      // Fix: Repackage the Blob into a File so FormData preserves the filename and MIME type
+      const newName = file.name.replace(/\.[^/.]+$/, "") + ".webp";
+      finalFile = new File([compressedBlob], newName, { type: "image/webp" });
     } catch (e) {
       console.error("Compression failed, using original file", e);
     }
