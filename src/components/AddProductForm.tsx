@@ -860,8 +860,8 @@ export default function AddProductForm({ product, onSaveSuccess, onCancel }: Add
               <span>Tip: The first image (Cover Image) will be used as the primary thumbnail. You can assign colors to other images so they show up when a buyer selects that color.</span>
             </div>
           </div>
-        </div>          </div>
         </div>
+
 
         {/* Section 3: Colors & Sizes combination builder */}
         <div className="space-y-5">
